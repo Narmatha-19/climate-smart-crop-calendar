@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}My Calendar — Climate-Smart Crop Calendar{% endblock %}
+{% set active_page = 'calendar' %}
+{% block page_title %}{{ t('crop_calendar_title') }}{% endblock %}
+{% block page_subtitle %}{{ t('based_on_latest') if rec else t('no_rec_yet') }}{% endblock %}
+
+{% block content %}
+
+<div class="card panel">
+  <div class="section-title">
+    <span id="calMonthLabel">{{ t('crop_calendar_title') }}</span>
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-ghost btn-sm" id="prevMonthBtn"><i class="fa-solid fa-chevron-left"></i></button>
+      <button class="btn btn-ghost btn-sm" id="nextMonthBtn">{{ t('next') }} <i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+  </div>
+
+  <div class="cal-grid" id="calWeekdays">
+    <div class="cal-weekday">Mon</div>
+    <div class="cal-weekday">Tue</div>
+    <div class="cal-weekday">Wed</div>
+    <div class="cal-weekday">Thu</div>
+    <div class="cal-weekday">Fri</div>
+    <div class="cal-weekday">Sat</div>
+    <div class="cal-weekday">Sun</div>
+  </div>
+  <div class="cal-grid" id="calDays"></div>
+
+  <div class="calendar-legend">
+    <div class="legend-chip"><span class="legend-dot green"></span> {{ t('recommended_days') }}</div>
+    <div class="legend-chip"><span class="legend-dot yellow"></span> {{ t('acceptable_days') }}</div>
+    <div class="legend-chip"><span class="legend-dot red"></span> {{ t('high_risk_days') }}</div>
+  </div>
+
+  {% if rec %}
+  <div class="result-actions" style="margin-top:22px;">
+    <button class="btn btn-outline" id="downloadCalBtn"><i class="fa-solid fa-download"></i> {{ t('download_calendar_pdf') }}</button>
+    <button class="btn btn-primary" id="saveRecBtn" data-rec-id="{{ rec['id'] }}"><i class="fa-regular fa-floppy-disk"></i> {{ t('save_recommendation') }}</button>
+  </div>
+  {% else %}
+  <p class="text-muted" style="margin-top:18px;">
+    {{ t('no_rec_generated') }}
+    <a href="{{ url_for('recommendation') }}" style="color:var(--green-700); font-weight:700;">{{ t('get_one_now') }} &rarr;</a>
+  </p>
+  {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const recData = {{ ({
+      'best_sowing_date': rec['best_sowing_date'],
+      'sowing_window': rec['sowing_window']
+  } if rec else None) | tojson }};
+  initCropCalendar(recData);
+
+  {% if rec %}
+  document.getElementById('saveRecBtn').addEventListener('click', function () {
+    const btn = this;
+    fetch("/api/save-recommendation/{{ rec['id'] }}", { method: "POST" })
+      .then(res => res.json())
+      .then(() => {
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> {{ t("saved") }}';
+        btn.disabled = true;
+      });
+  });
+  document.getElementById('downloadCalBtn').addEventListener('click', function () {
+    window.print();
+  });
+  {% endif %}
+</script>
+{% endblock %}

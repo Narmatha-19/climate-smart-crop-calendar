@@ -1,0 +1,11 @@
+Flask==3.0.3
+Werkzeug==3.0.3
+
+# Included for the ML pipeline scaffold (models/ml_model.py).
+# The app ships with a rule-based placeholder so it runs without them,
+# but they're listed here since the brief calls for a full ML stack —
+# uncomment / install when you wire in a trained model.
+# scikit-learn==1.5.1
+# pandas==2.2.2
+# numpy==1.26.4
+# xgboost==2.1.1

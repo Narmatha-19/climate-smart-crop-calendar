@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register — Climate-Smart Crop Calendar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="auth-lang-toggle lang-toggle">
+  <a href="{{ url_for('set_language', lang_code='en') }}" class="lang-btn {{ 'active' if current_lang == 'en' }}">EN</a>
+  <a href="{{ url_for('set_language', lang_code='ta') }}" class="lang-btn {{ 'active' if current_lang == 'ta' }}">தமிழ்</a>
+</div>
+<div class="auth-page">
+  <div class="auth-hero">
+    <div class="auth-hero-brand">
+      <div class="brand-mark"><i class="fa-solid fa-leaf"></i></div>
+      <div class="brand-text">
+        <div class="brand-name" style="color:#fff;">{{ t('brand_name') }}</div>
+        <div class="brand-sub" style="color:rgba(255,255,255,0.75);">{{ t('brand_sub') }}</div>
+      </div>
+    </div>
+    <h2>{{ t('register_heading') | safe }}</h2>
+    <p>{{ t('register_hero_text') }}</p>
+  </div>
+
+  <div class="auth-panel">
+    <div class="auth-form-wrap" style="max-width: 480px;">
+      <h1>{{ t('register_title') }}</h1>
+      <p class="subtitle">{{ t('register_subtitle') }}</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-stack">
+          {% for category, message in messages %}
+          <div class="flash-msg flash-{{ 'error' if category == 'error' else category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('register') }}" id="registerForm" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="name">{{ t('label_name') }}</label>
+            <input class="form-control" type="text" id="name" name="name" placeholder="{{ t('placeholder_name') }}"
+                   value="{{ form.name if form else '' }}" required>
+          </div>
+          <div class="form-group">
+            <label for="preferred_crop">{{ t('label_preferred_crop') }}</label>
+            <select class="form-control" id="preferred_crop" name="preferred_crop" required>
+              <option value="" disabled {{ 'selected' if not form or not form.get('preferred_crop') }}>{{ t('select_crop_placeholder') }}</option>
+              {% for crop in crops %}
+              <option value="{{ crop }}" {{ 'selected' if form and form.get('preferred_crop') == crop }}>{{ tr_crop(crop) }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="mobile">{{ t('label_mobile') }}</label>
+            <input class="form-control" type="text" id="mobile" name="mobile" placeholder="{{ t('placeholder_mobile_reg') }}"
+                   maxlength="10" pattern="[0-9]{10}" value="{{ form.mobile if form else '' }}" required>
+          </div>
+          <div class="form-group">
+            <label for="email">{{ t('label_email') }}</label>
+            <input class="form-control" type="email" id="email" name="email" placeholder="{{ t('placeholder_email') }}"
+                   value="{{ form.email if form else '' }}">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="district">{{ t('label_district') }}</label>
+            <select class="form-control" id="district" name="district" required>
+              <option value="" disabled {{ 'selected' if not form or not form.get('district') }}>{{ t('select_district_placeholder') }}</option>
+              {% for d in districts %}
+              <option value="{{ d }}" {{ 'selected' if form and form.get('district') == d }}>{{ tr_district(d) }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="farm_size">{{ t('label_farm_size') }}</label>
+            <input class="form-control" type="number" step="0.1" min="0.1" id="farm_size" name="farm_size"
+                   placeholder="{{ t('placeholder_farm_size') }}" value="{{ form.farm_size if form else '' }}" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="password">{{ t('label_password') }}</label>
+            <div class="input-wrap">
+              <input class="form-control" type="password" id="password" name="password" placeholder="{{ t('placeholder_password_create') }}" minlength="6" required>
+              <button type="button" class="toggle-password" data-target="password"><i class="fa-regular fa-eye"></i></button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="confirm_password">{{ t('label_confirm_password') }}</label>
+            <div class="input-wrap">
+              <input class="form-control" type="password" id="confirm_password" name="confirm_password" placeholder="{{ t('placeholder_password_confirm') }}" minlength="6" required>
+              <button type="button" class="toggle-password" data-target="confirm_password"><i class="fa-regular fa-eye"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">{{ t('btn_register') }}</button>
+      </form>
+
+      <div class="auth-switch">
+        {{ t('already_account') }} <a href="{{ url_for('login') }}">{{ t('login_here') }}</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

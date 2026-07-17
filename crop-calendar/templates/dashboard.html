@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Climate-Smart Crop Calendar{% endblock %}
+{% set active_page = 'dashboard' %}
+{% block page_title %}{{ t('welcome') }}, {{ farmer['name'].split(' ')[0] }} 👋{% endblock %}
+{% block page_subtitle %}{{ t('district_label') }}: {{ tr_district(farmer['district']) }}, Tamil Nadu{% endblock %}
+
+{% block content %}
+
+<div class="section-title" style="margin-bottom:16px;">{{ t('todays_weather') }}</div>
+<div class="grid-4" style="margin-bottom:24px;">
+  <div class="card stat-card">
+    <div class="stat-icon temp"><i class="fa-solid fa-temperature-half"></i></div>
+    <div class="stat-value">{{ weather_today.temperature }}°C</div>
+    <div class="stat-label">{{ t('temperature') }}</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-icon rain"><i class="fa-solid fa-cloud-rain"></i></div>
+    <div class="stat-value">{{ weather_today.rainfall | int }} mm</div>
+    <div class="stat-label">{{ t('rainfall') }}</div>
+    <div class="stat-sub">{{ t('this_week') }}</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-icon humidity"><i class="fa-solid fa-droplet"></i></div>
+    <div class="stat-value">{{ weather_today.humidity | int }}%</div>
+    <div class="stat-label">{{ t('humidity') }}</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-icon wind"><i class="fa-solid fa-wind"></i></div>
+    <div class="stat-value">{{ weather_today.wind_speed | int }} km/h</div>
+    <div class="stat-label">{{ t('wind_speed') }}</div>
+  </div>
+</div>
+
+<div class="grid-2" style="align-items:start;">
+  <div class="card panel">
+    <div class="section-title">
+      {{ t('rainfall_forecast') }}
+      <span class="text-muted" style="font-weight:500; font-size:0.78rem;">{{ t('next_7_days') }}</span>
+    </div>
+    <div class="chart-wrap"><canvas id="rainfallChart"></canvas></div>
+  </div>
+
+  <div class="card panel">
+    <div class="section-title">
+      {{ t('climate_alerts') }}
+    </div>
+    {% for alert in alerts %}
+    <div class="alert-item {{ alert.level }}">
+      <i class="fa-solid {{ 'fa-triangle-exclamation' if alert.level != 'low' else 'fa-circle-check' }} alert-icon"></i>
+      <div>
+        <div class="alert-title">{{ alert.title }}</div>
+        <div class="alert-detail">{{ alert.detail }}</div>
+      </div>
+    </div>
+    {% endfor %}
+    <a href="{{ url_for('notifications') }}" class="btn btn-primary btn-block" style="margin-top:6px;">{{ t('view_all_alerts') }}</a>
+  </div>
+</div>
+
+<div class="grid-2" style="margin-top:20px; align-items:start;">
+  <div class="card panel">
+    <div class="section-title">{{ t('temperature_trend') }}</div>
+    <div class="chart-wrap"><canvas id="temperatureChart"></canvas></div>
+  </div>
+
+  <div class="card panel">
+    <div class="section-title">{{ t('quick_actions') }}</div>
+    <div class="quick-actions">
+      <a href="{{ url_for('recommendation') }}" class="quick-action-btn"><i class="fa-solid fa-seedling"></i> {{ t('nav_recommendation') }}</a>
+      <a href="{{ url_for('weather') }}" class="quick-action-btn"><i class="fa-solid fa-cloud-sun-rain"></i> {{ t('nav_weather') }}</a>
+      <a href="{{ url_for('calendar_view') }}" class="quick-action-btn"><i class="fa-regular fa-calendar-days"></i> {{ t('nav_calendar') }}</a>
+      <a href="{{ url_for('notifications') }}" class="quick-action-btn"><i class="fa-regular fa-bell"></i> {{ t('nav_notifications') }}</a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+  const rainfallLabels = {{ rainfall_trend['labels'] | tojson }};
+  const rainfallValues = {{ rainfall_trend['values'] | tojson }};
+  const temperatureValues = {{ temperature_trend['values'] | tojson }};
+  initDashboardCharts(rainfallLabels, rainfallValues, temperatureValues);
+</script>
+{% endblock %}

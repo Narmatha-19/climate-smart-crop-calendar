@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — Climate-Smart Crop Calendar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="auth-lang-toggle lang-toggle">
+  <a href="{{ url_for('set_language', lang_code='en') }}" class="lang-btn {{ 'active' if current_lang == 'en' }}">EN</a>
+  <a href="{{ url_for('set_language', lang_code='ta') }}" class="lang-btn {{ 'active' if current_lang == 'ta' }}">தமிழ்</a>
+</div>
+<div class="auth-page">
+  <div class="auth-hero">
+    <div class="auth-hero-brand">
+      <div class="brand-mark"><i class="fa-solid fa-leaf"></i></div>
+      <div class="brand-text">
+        <div class="brand-name" style="color:#fff;">{{ t('brand_name') }}</div>
+        <div class="brand-sub" style="color:rgba(255,255,255,0.75);">{{ t('brand_sub') }}</div>
+      </div>
+    </div>
+    <h2>{{ t('login_heading') | safe }}</h2>
+    <p>{{ t('login_hero_text') }}</p>
+  </div>
+
+  <div class="auth-panel">
+    <div class="auth-form-wrap">
+      <h1>{{ t('login_title') }}</h1>
+      <p class="subtitle">{{ t('login_subtitle') }}</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-stack">
+          {% for category, message in messages %}
+          <div class="flash-msg flash-{{ 'error' if category == 'error' else category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('login') }}" id="loginForm" novalidate>
+        <div class="form-group">
+          <label for="mobile">{{ t('label_mobile') }}</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-mobile-screen field-icon"></i>
+            <input class="form-control has-icon" type="text" id="mobile" name="mobile"
+                   placeholder="{{ t('placeholder_mobile') }}" maxlength="10" pattern="[0-9]{10}" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="password">{{ t('label_password') }}</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-lock field-icon"></i>
+            <input class="form-control has-icon" type="password" id="password" name="password"
+                   placeholder="{{ t('placeholder_password') }}" required>
+            <button type="button" class="toggle-password" data-target="password"><i class="fa-regular fa-eye"></i></button>
+          </div>
+        </div>
+
+        <div class="form-links">
+          <a href="{{ url_for('forgot_password') }}">{{ t('forgot_password') }}</a>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">{{ t('btn_login') }}</button>
+      </form>
+
+      <div class="auth-switch">
+        {{ t('no_account') }} <a href="{{ url_for('register') }}">{{ t('register_here') }}</a>
+      </div>
+
+      <div class="auth-switch" style="margin-top:14px; font-size:0.78rem;">
+        {{ t('demo_login_note') | safe }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

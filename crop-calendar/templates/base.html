@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Climate-Smart Crop Calendar{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><i class="fa-solid fa-leaf"></i></div>
+      <div class="brand-text">
+        <div class="brand-name">{{ t('brand_name') }}</div>
+        <div class="brand-sub">{{ t('brand_sub') }}</div>
+      </div>
+    </div>
+
+    <nav class="nav-section">
+      <a href="{{ url_for('dashboard') }}" class="nav-item {{ 'active' if active_page == 'dashboard' }}">
+        <i class="fa-solid fa-grid-2"></i> {{ t('nav_dashboard') }}
+      </a>
+      <a href="{{ url_for('recommendation') }}" class="nav-item {{ 'active' if active_page == 'recommendation' }}">
+        <i class="fa-solid fa-seedling"></i> {{ t('nav_recommendation') }}
+      </a>
+      <a href="{{ url_for('weather') }}" class="nav-item {{ 'active' if active_page == 'weather' }}">
+        <i class="fa-solid fa-cloud-sun-rain"></i> {{ t('nav_weather') }}
+      </a>
+      <a href="{{ url_for('calendar_view') }}" class="nav-item {{ 'active' if active_page == 'calendar' }}">
+        <i class="fa-regular fa-calendar-days"></i> {{ t('nav_calendar') }}
+      </a>
+      <a href="{{ url_for('notifications') }}" class="nav-item {{ 'active' if active_page == 'notifications' }}">
+        <i class="fa-regular fa-bell"></i> {{ t('nav_notifications') }}
+      </a>
+      <a href="{{ url_for('profile') }}" class="nav-item {{ 'active' if active_page == 'profile' }}">
+        <i class="fa-regular fa-circle-user"></i> {{ t('nav_profile') }}
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="{{ url_for('logout') }}" class="nav-item">
+        <i class="fa-solid fa-right-from-bracket"></i> {{ t('nav_logout') }}
+      </a>
+    </div>
+  </aside>
+
+  <div class="main-col">
+    <header class="topbar">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <button class="menu-toggle" id="menuToggle"><i class="fa-solid fa-bars"></i></button>
+        <div>
+          <div class="topbar-title">{% block page_title %}{{ t('nav_dashboard') }}{% endblock %}</div>
+          <div class="topbar-sub">{% block page_subtitle %}{% endblock %}</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="lang-toggle">
+          <a href="{{ url_for('set_language', lang_code='en') }}" class="lang-btn {{ 'active' if current_lang == 'en' }}">EN</a>
+          <a href="{{ url_for('set_language', lang_code='ta') }}" class="lang-btn {{ 'active' if current_lang == 'ta' }}">தமிழ்</a>
+        </div>
+        <a href="{{ url_for('notifications') }}" class="icon-btn">
+          <i class="fa-regular fa-bell"></i>
+          {% if unread_count is defined and unread_count > 0 %}<span class="icon-dot"></span>{% endif %}
+        </a>
+        <a href="{{ url_for('profile') }}" class="avatar-chip">
+          <div class="avatar-circle">{{ (farmer['name'][0] if farmer else 'F') | upper }}</div>
+        </a>
+      </div>
+    </header>
+
+    <main class="page-content">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-stack">
+          {% for category, message in messages %}
+          <div class="flash-msg flash-{{ 'error' if category == 'error' else category }}">
+            <i class="fa-solid {{ 'fa-circle-check' if category == 'success' else 'fa-triangle-exclamation' }}"></i>
+            {{ message }}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

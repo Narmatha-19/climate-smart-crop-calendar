@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Recommendation Result — Climate-Smart Crop Calendar{% endblock %}
+{% set active_page = 'recommendation' %}
+{% block page_title %}{{ t('ai_result_title') }}{% endblock %}
+{% block page_subtitle %}{{ t('ai_result_subtitle') }}{% endblock %}
+
+{% block content %}
+
+{% set risk_key = {'Low': 'risk_low', 'Moderate': 'risk_moderate', 'High': 'risk_high'} %}
+
+<div class="result-hero">
+  <div class="card">
+    <div class="result-hero-label"><i class="fa-solid fa-seedling"></i> {{ t('recommended_crop') }}</div>
+    <div class="result-hero-value">{{ tr_crop(rec['crop']) }}</div>
+  </div>
+  <div class="card">
+    <div class="result-hero-label"><i class="fa-solid fa-sun-plant-wilt"></i> {{ t('season') }}</div>
+    <div class="result-hero-value">{{ tr_season(rec['season']) }}</div>
+    <div class="result-hero-sub">{{ tr_district(rec['district']) }}</div>
+  </div>
+  <div class="card">
+    <div class="result-hero-label"><i class="fa-regular fa-calendar-check"></i> {{ t('recommended_window') }}</div>
+    <div class="result-hero-value" style="font-size:1rem;">{{ rec['sowing_window'] }}</div>
+    <div class="result-hero-sub">{{ t('best_sowing_date') }}: <strong>{{ rec['best_sowing_date'] }}</strong></div>
+  </div>
+</div>
+
+<div class="grid-2" style="align-items:start;">
+  <div class="card panel">
+    <div class="section-title">{{ t('weather_prediction') }}</div>
+    <div class="metric-row">
+      <div class="metric-label"><i class="fa-solid fa-cloud-rain" style="color:#2563eb;"></i> {{ t('expected_rainfall') }}</div>
+      <div class="metric-value">{{ rec['expected_rainfall'] }} mm</div>
+    </div>
+    <div class="metric-row">
+      <div class="metric-label"><i class="fa-solid fa-temperature-half" style="color:#e05a2b;"></i> {{ t('avg_temperature') }}</div>
+      <div class="metric-value">{{ rec['avg_temperature'] }}°C</div>
+    </div>
+    <div class="metric-row">
+      <div class="metric-label"><i class="fa-solid fa-droplet" style="color:#0891b2;"></i> {{ t('humidity') }}</div>
+      <div class="metric-value">{{ rec['humidity'] }}%</div>
+    </div>
+  </div>
+
+  <div class="card panel">
+    <div class="section-title">{{ t('risk_assessment') }}</div>
+    <div class="metric-row">
+      <div class="metric-label">{{ t('drought_risk') }}</div>
+      <span class="badge badge-{{ rec['drought_risk'] | lower }}">{{ t(risk_key[rec['drought_risk']]) }}</span>
+    </div>
+    <div class="metric-row">
+      <div class="metric-label">{{ t('flood_risk') }}</div>
+      <span class="badge badge-{{ rec['flood_risk'] | lower }}">{{ t(risk_key[rec['flood_risk']]) }}</span>
+    </div>
+    <div class="metric-row">
+      <div class="metric-label">{{ t('overall_risk') }}</div>
+      <span class="badge badge-{{ rec['overall_risk'] | lower }}">{{ t(risk_key[rec['overall_risk']]) }}</span>
+    </div>
+  </div>
+
+  <div class="card panel" style="display:flex;">
+    <div class="gauge-wrap" style="width:100%;">
+      <div class="section-title" style="width:100%;">{{ t('model_confidence') }}</div>
+      <svg width="140" height="140" viewBox="0 0 140 140">
+        <circle cx="70" cy="70" r="58" fill="none" stroke="#e8f5e9" stroke-width="12"/>
+        <circle cx="70" cy="70" r="58" fill="none" stroke="#2e7d32" stroke-width="12"
+                stroke-linecap="round"
+                stroke-dasharray="{{ 2 * 3.14159 * 58 }}"
+                stroke-dashoffset="{{ (2 * 3.14159 * 58) * (1 - rec['confidence_score'] / 100) }}"
+                transform="rotate(-90 70 70)"/>
+      </svg>
+      <div class="gauge-value" style="margin-top:-90px;">{{ rec['confidence_score'] }}%</div>
+      <div class="gauge-label" style="margin-top:52px;">{{ t('high_confidence') }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="card panel" style="margin-top:20px;">
+  <div class="section-title">{{ t('ai_suggestions') }}</div>
+  <div class="suggestion-list">
+    {% for s in suggestions %}
+    <div class="suggestion-item"><i class="fa-solid fa-circle-check"></i> {{ s }}</div>
+    {% endfor %}
+  </div>
+  <div class="result-actions">
+    <button class="btn btn-outline" id="downloadPdfBtn"><i class="fa-solid fa-download"></i> {{ t('download_pdf') }}</button>
+    <a href="{{ url_for('calendar_view') }}" class="btn btn-primary" id="addToCalendarBtn">
+      <i class="fa-regular fa-calendar-plus"></i> {{ t('add_to_calendar') }}
+    </a>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.getElementById('downloadPdfBtn').addEventListener('click', function () {
+    window.print();
+  });
+</script>
+{% endblock %}

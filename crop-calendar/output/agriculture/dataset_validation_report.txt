@@ -1,0 +1,35 @@
+============================================================
+AGRICULTURE DATASET VALIDATION REPORT
+============================================================
+
+Rows : 575879
+Columns : 8
+
+COLUMN NAMES
+------------------------
+State_Name
+District_Name
+Crop_Year
+Season
+Crop
+Area
+Production
+yield
+
+States : 36
+Districts : 730
+Crops : 128
+Years : 24
+Year Range : 1997 - 2020
+Duplicate Rows : 0
+
+MISSING VALUES
+------------------------
+State_Name       0
+District_Name    0
+Crop_Year        0
+Season           0
+Crop             0
+Area             0
+Production       0
+yield            0

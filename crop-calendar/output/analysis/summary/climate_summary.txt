@@ -1,0 +1,13 @@
+CLIMATE SMART CROP CALENDAR
+=============================================
+
+Total Districts : 38
+Total Records : 291460
+Start Date : 2005-01-01
+End Date : 2025-12-31
+Average Temperature : 27.14
+Average Rainfall : 2.88
+Average Humidity : 71.81
+Average WindSpeed : 2.69
+Missing Values : 0
+Duplicate Rows : 0

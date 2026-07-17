@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Weather Forecast — Climate-Smart Crop Calendar{% endblock %}
+{% set active_page = 'weather' %}
+{% block page_title %}{{ t('weather_forecast') }}{% endblock %}
+{% block page_subtitle %}{{ t('day_forecast_for') }} {{ tr_district(farmer['district']) }}{% endblock %}
+
+{% block content %}
+
+<div class="forecast-summary">
+  <div class="card stat-card">
+    <div class="stat-icon temp"><i class="fa-solid fa-temperature-half"></i></div>
+    <div class="stat-value">{{ forecast_days[0].temperature }}°C</div>
+    <div class="stat-label">{{ t('temperature') }}</div>
+    <div class="stat-sub">{{ t('average') }}</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-icon rain"><i class="fa-solid fa-cloud-rain"></i></div>
+    <div class="stat-value">{{ (forecast_days | sum(attribute='rainfall')) | int }} mm</div>
+    <div class="stat-label">{{ t('rainfall') }}</div>
+    <div class="stat-sub">{{ t('this_week') }}</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-icon humidity"><i class="fa-solid fa-droplet"></i></div>
+    <div class="stat-value">{{ forecast_days[0].humidity | int }}%</div>
+    <div class="stat-label">{{ t('humidity') }}</div>
+    <div class="stat-sub">{{ t('average') }}</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-icon wind"><i class="fa-solid fa-wind"></i></div>
+    <div class="stat-value">{{ forecast_days[0].wind_speed | int }} km/h</div>
+    <div class="stat-label">{{ t('wind_speed') }}</div>
+    <div class="stat-sub">{{ t('average') }}</div>
+  </div>
+</div>
+
+<div class="card panel">
+  <div class="section-title">{{ t('forecast_table_title') }}</div>
+  <div style="overflow-x:auto;">
+    <table class="forecast-table">
+      <thead>
+        <tr>
+          <th>{{ t('col_date') }}</th>
+          <th>{{ t('col_weather') }}</th>
+          <th>{{ t('col_temp') }}</th>
+          <th>{{ t('col_rainfall') }}</th>
+          <th>{{ t('col_humidity') }}</th>
+          <th>{{ t('col_wind') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for day in forecast_days %}
+        <tr>
+          <td>{{ day.date }}</td>
+          <td>
+            <div class="weather-condition-cell">
+              <span class="weather-icon-chip"><i class="fa-solid fa-{{ day.icon }}"></i></span>
+              {{ day.condition }}
+            </div>
+          </td>
+          <td>{{ day.temperature }}</td>
+          <td>{{ day.rainfall | int }}</td>
+          <td>{{ day.humidity | int }}</td>
+          <td>{{ day.wind_speed | int }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

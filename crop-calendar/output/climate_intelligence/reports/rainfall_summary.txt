@@ -1,0 +1,431 @@
+============================================================
+RAINFALL TREND ANALYSIS REPORT
+============================================================
+
+District : Ariyalur
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 6.88
+R² Score : 0.031
+Percentage Change : -15.44%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Chengalpattu
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 1.91
+R² Score : 0.002
+Percentage Change : -31.88%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Chennai
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 4.6
+R² Score : 0.008
+Percentage Change : -30.52%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Coimbatore
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 6.11
+R² Score : 0.03
+Percentage Change : -7.33%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Cuddalore
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 5.95
+R² Score : 0.026
+Percentage Change : -17.21%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Dharmapuri
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : -1.49
+R² Score : 0.002
+Percentage Change : -41.86%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Dindigul
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 5.17
+R² Score : 0.025
+Percentage Change : -31.01%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Erode
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 9.61
+R² Score : 0.09
+Percentage Change : -27.55%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Kallakurichi
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 3.28
+R² Score : 0.008
+Percentage Change : -30.45%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Kanchipuram
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 4.6
+R² Score : 0.008
+Percentage Change : -30.52%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Kanniyakumari
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : -7.3
+R² Score : 0.016
+Percentage Change : -23.73%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Karur
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 0.84
+R² Score : 0.001
+Percentage Change : -35.1%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Krishnagiri
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 2.56
+R² Score : 0.004
+Percentage Change : -38.95%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Madurai
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 4.67
+R² Score : 0.012
+Percentage Change : -37.07%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Mayiladuthurai
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 6.88
+R² Score : 0.031
+Percentage Change : -15.44%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Nagapattinam
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 13.35
+R² Score : 0.131
+Percentage Change : 0.09%
+Trend : Increasing
+Strength : Moderate Increase
+Interpretation : Annual rainfall shows an increasing trend during the study period.
+------------------------------------------------------------
+
+District : Namakkal
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 0.84
+R² Score : 0.001
+Percentage Change : -35.1%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Nilgiris
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 0.9
+R² Score : 0.001
+Percentage Change : -20.04%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Perambalur
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 4.68
+R² Score : 0.019
+Percentage Change : -24.99%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Pudukkottai
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 7.04
+R² Score : 0.04
+Percentage Change : -21.42%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Ramanathapuram
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 1.88
+R² Score : 0.002
+Percentage Change : -30.17%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Ranipet
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 5.33
+R² Score : 0.016
+Percentage Change : -25.45%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Salem
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : -2.09
+R² Score : 0.004
+Percentage Change : -40.9%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Sivagangai
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 7.3
+R² Score : 0.034
+Percentage Change : -23.89%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Tenkasi
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : -21.76
+R² Score : 0.117
+Percentage Change : -46.55%
+Trend : Decreasing
+Strength : Strong Decrease
+Interpretation : Annual rainfall shows a decreasing trend during the study period.
+------------------------------------------------------------
+
+District : Thanjavur
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 6.88
+R² Score : 0.031
+Percentage Change : -15.44%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Theni
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 2.95
+R² Score : 0.004
+Percentage Change : -36.2%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Thoothukudi
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : -9.11
+R² Score : 0.024
+Percentage Change : -50.11%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Tiruchirappalli
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 4.68
+R² Score : 0.019
+Percentage Change : -24.99%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Tirunelveli
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : -18.7
+R² Score : 0.092
+Percentage Change : -41.9%
+Trend : Decreasing
+Strength : Moderate Decrease
+Interpretation : Annual rainfall shows a decreasing trend during the study period.
+------------------------------------------------------------
+
+District : Tirupathur
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 3.35
+R² Score : 0.007
+Percentage Change : -33.1%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Tiruppur
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 13.35
+R² Score : 0.181
+Percentage Change : -19.62%
+Trend : Increasing
+Strength : Moderate Increase
+Interpretation : Annual rainfall shows an increasing trend during the study period.
+------------------------------------------------------------
+
+District : Tiruvallur
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 4.6
+R² Score : 0.008
+Percentage Change : -30.52%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Tiruvannamalai
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 1.5
+R² Score : 0.001
+Percentage Change : -29.62%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Tiruvarur
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 6.88
+R² Score : 0.031
+Percentage Change : -15.44%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Vellore
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 5.33
+R² Score : 0.016
+Percentage Change : -25.45%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Viluppuram
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : 1.5
+R² Score : 0.001
+Percentage Change : -29.62%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+District : Virudhunagar
+Study Period : 2005 - 2025
+Years Analysed : 21
+Slope : -3.03
+R² Score : 0.003
+Percentage Change : -46.6%
+Trend : Stable
+Strength : Stable
+Interpretation : Annual rainfall remains relatively stable during the study period.
+------------------------------------------------------------
+
+
+============================================================
+RESEARCH OBSERVATIONS
+============================================================
+
+1. Linear regression was used to analyse long-term rainfall trends.
+2. Low R² values indicate high year-to-year rainfall variability.
+3. Rainfall variability is expected to become an important feature for the Climate Stability Index.
+4. The generated trend information will be integrated into the Machine Learning recommendation model.

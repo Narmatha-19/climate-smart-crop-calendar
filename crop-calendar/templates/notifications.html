@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Notifications — Climate-Smart Crop Calendar{% endblock %}
+{% set active_page = 'notifications' %}
+{% block page_title %}{{ t('notifications_title') }}{% endblock %}
+{% block page_subtitle %}{{ t('notifications_subtitle') }}{% endblock %}
+
+{% block content %}
+
+<div class="notif-tabs" id="notifTabs">
+  <button class="notif-tab active" data-filter="all">{{ t('tab_all') }}</button>
+  <button class="notif-tab" data-filter="weather">{{ t('tab_weather') }}</button>
+  <button class="notif-tab" data-filter="monsoon">{{ t('tab_monsoon') }}</button>
+  <button class="notif-tab" data-filter="sowing">{{ t('tab_sowing') }}</button>
+  <button class="notif-tab" data-filter="system">{{ t('tab_system') }}</button>
+</div>
+
+<div id="notifList">
+  {% for n in notifications %}
+  <div class="card notif-card" data-category="{{ n['category'] }}">
+    <div class="notif-icon {{ n['category'] }}">
+      <i class="fa-solid {{
+        'fa-cloud-showers-heavy' if n['category'] == 'weather'
+        else 'fa-cloud-sun-rain' if n['category'] == 'monsoon'
+        else 'fa-seedling' if n['category'] == 'sowing'
+        else 'fa-circle-info' }}"></i>
+    </div>
+    <div class="notif-body">
+      <div class="notif-title">{{ n['title'] }}</div>
+      <div class="notif-text">{{ n['notification_text'] }}</div>
+      <div class="notif-time">{{ n['created_at'] }}</div>
+    </div>
+  </div>
+  {% else %}
+  <div class="card panel" style="text-align:center; color:var(--ink-500);">
+    <i class="fa-regular fa-bell-slash" style="font-size:1.6rem; margin-bottom:10px; display:block;"></i>
+    {{ t('no_notifications') }}
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.querySelectorAll('#notifTabs .notif-tab').forEach(tab => {
+    tab.addEventListener('click', function () {
+      document.querySelectorAll('#notifTabs .notif-tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      const filter = this.dataset.filter;
+      document.querySelectorAll('#notifList .notif-card').forEach(card => {
+        card.style.display = (filter === 'all' || card.dataset.category === filter) ? 'flex' : 'none';
+      });
+    });
+  });
+</script>
+{% endblock %}

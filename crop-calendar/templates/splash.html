@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Climate-Smart Crop Calendar — AI-Powered Climate Smart Farming</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="splash">
+  <div class="splash-nav">
+    <div style="display:flex; align-items:center; gap:10px; color:#fff;">
+      <div class="brand-mark"><i class="fa-solid fa-leaf"></i></div>
+      <div class="brand-text">
+        <div class="brand-name" style="color:#fff;">{{ t('brand_name') }}</div>
+        <div class="brand-sub" style="color:rgba(255,255,255,0.75);">{{ t('brand_sub') }}</div>
+      </div>
+    </div>
+    <div class="lang-toggle">
+      <a href="{{ url_for('set_language', lang_code='en') }}" class="lang-btn {{ 'active' if current_lang == 'en' }}">EN</a>
+      <a href="{{ url_for('set_language', lang_code='ta') }}" class="lang-btn {{ 'active' if current_lang == 'ta' }}">தமிழ்</a>
+    </div>
+  </div>
+
+  <div class="splash-content">
+    <div class="splash-eyebrow"><i class="fa-solid fa-satellite-dish"></i> {{ t('splash_eyebrow') }}</div>
+    <h1 class="splash-title">{{ t('splash_title_pre') }} <span>{{ t('splash_title_highlight') }}</span> {{ t('splash_title_post') }}</h1>
+    <p class="splash-tagline">{{ t('splash_tagline') }}</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div class="flash-stack" style="max-width:420px;">
+        {% for category, message in messages %}
+        <div class="flash-msg flash-{{ 'error' if category == 'error' else category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="splash-actions">
+      <a href="{{ url_for('login') }}" class="btn btn-primary"><i class="fa-solid fa-right-to-bracket"></i> {{ t('btn_login') }}</a>
+      <a href="{{ url_for('register') }}" class="btn btn-outline"><i class="fa-solid fa-user-plus"></i> {{ t('btn_register') }}</a>
+    </div>
+  </div>
+</div>
+</body>
+</html>

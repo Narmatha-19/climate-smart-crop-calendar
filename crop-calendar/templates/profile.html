@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Profile — Climate-Smart Crop Calendar{% endblock %}
+{% set active_page = 'profile' %}
+{% block page_title %}{{ t('farmer_profile') }}{% endblock %}
+{% block page_subtitle %}{{ t('profile_subtitle') }}{% endblock %}
+
+{% block content %}
+
+<div class="card" style="margin-bottom:20px;">
+  <div class="profile-header">
+    <div class="profile-avatar-lg">{{ (farmer['name'][0]) | upper }}</div>
+    <div style="flex:1;">
+      <h2>{{ farmer['name'] }}</h2>
+      <p class="text-muted" style="margin-top:4px;">{{ farmer['mobile'] }} · {{ farmer['email'] or t('no_email_added') }}</p>
+    </div>
+    <button class="btn btn-outline" id="editProfileBtn"><i class="fa-solid fa-pen"></i> {{ t('edit_profile') }}</button>
+  </div>
+  <div class="profile-info-grid" id="profileView">
+    <div class="profile-info-item">
+      <div class="label">{{ t('district_label') }}</div>
+      <div class="value">{{ tr_district(farmer['district']) }}, Tamil Nadu</div>
+    </div>
+    <div class="profile-info-item">
+      <div class="label">{{ t('farm_size') }}</div>
+      <div class="value">{{ farmer['farm_size'] }} {{ t('acres') }}</div>
+    </div>
+    <div class="profile-info-item">
+      <div class="label">{{ t('preferred_crop') }}</div>
+      <div class="value">{{ tr_crop(farmer['preferred_crop']) }}</div>
+    </div>
+    <div class="profile-info-item">
+      <div class="label">{{ t('member_since') }}</div>
+      <div class="value">{{ farmer['created_at'].split(' ')[0] if farmer['created_at'] else '-' }}</div>
+    </div>
+  </div>
+
+  <form method="POST" action="{{ url_for('profile') }}" id="profileForm" style="display:none; padding: 0 24px 24px;">
+    <div class="form-row">
+      <div class="form-group">
+        <label>{{ t('label_name') }}</label>
+        <input class="form-control" type="text" name="name" value="{{ farmer['name'] }}" required>
+      </div>
+      <div class="form-group">
+        <label>{{ t('label_email') }}</label>
+        <input class="form-control" type="email" name="email" value="{{ farmer['email'] or '' }}">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>{{ t('district_label') }}</label>
+        <select class="form-control" name="district">
+          {% for d in districts %}
+          <option value="{{ d }}" {{ 'selected' if d == farmer['district'] }}>{{ tr_district(d) }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>{{ t('farm_size') }} ({{ t('acres') }})</label>
+        <input class="form-control" type="number" step="0.1" name="farm_size" value="{{ farmer['farm_size'] }}" required>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>{{ t('preferred_crop') }}</label>
+      <select class="form-control" name="preferred_crop">
+        {% for c in crops %}
+        <option value="{{ c }}" {{ 'selected' if c == farmer['preferred_crop'] }}>{{ tr_crop(c) }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">{{ t('save_changes') }}</button>
+  </form>
+</div>
+
+<div class="card panel">
+  <div class="section-title">{{ t('recent_recommendations') }}</div>
+  {% for r in recent_recs %}
+  <div class="rec-list-item">
+    <div class="rec-list-icon"><i class="fa-solid fa-seedling"></i></div>
+    <div class="rec-list-body">
+      <div class="rec-list-title">{{ tr_crop(r['crop']) }} · {{ tr_season(r['season']) }}</div>
+      <div class="rec-list-sub">{{ r['sowing_window'] }}</div>
+    </div>
+    <a href="{{ url_for('result', rec_id=r['id']) }}" class="btn btn-outline btn-sm">{{ t('view') }}</a>
+  </div>
+  {% else %}
+  <p class="text-muted">{{ t('no_recs_generated') }}</p>
+  {% endfor %}
+</div>
+
+<div style="margin-top:20px; text-align:center;">
+  <a href="{{ url_for('logout') }}" class="btn btn-outline"><i class="fa-solid fa-right-from-bracket"></i> {{ t('nav_logout') }}</a>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.getElementById('editProfileBtn').addEventListener('click', function () {
+    const view = document.getElementById('profileView');
+    const form = document.getElementById('profileForm');
+    const isHidden = form.style.display === 'none';
+    form.style.display = isHidden ? 'grid' : 'none';
+    view.style.display = isHidden ? 'none' : 'grid';
+    this.innerHTML = isHidden
+      ? '<i class="fa-solid fa-xmark"></i> {{ t("cancel") }}'
+      : '<i class="fa-solid fa-pen"></i> {{ t("edit_profile") }}';
+  });
+</script>
+{% endblock %}

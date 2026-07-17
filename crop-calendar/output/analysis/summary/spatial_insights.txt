@@ -1,0 +1,13 @@
+SPATIAL CLIMATE ANALYSIS
+
+Hottest District : Ramanathapuram
+Average Temperature : 28.36 °C
+
+Coolest District : Nilgiris
+Average Temperature : 23.5 °C
+
+Highest Rainfall District : Chennai
+Average Rainfall : 3.67 mm/day
+
+Lowest Rainfall District : Tiruppur
+Average Rainfall : 2.15 mm/day

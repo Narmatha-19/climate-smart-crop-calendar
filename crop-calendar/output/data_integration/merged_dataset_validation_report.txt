@@ -1,0 +1,55 @@
+MERGED DATASET VALIDATION REPORT
+==================================================
+
+Total Records : 4510
+Total Columns : 19
+Districts     : 33
+Years         : 2005 - 2019
+Crops         : 8
+Seasons       : 6
+
+Missing Values
+--------------------------------------------------
+State             0
+District          0
+Year              0
+Season            0
+Crop              0
+Area              0
+Production        0
+Yield             0
+AvgTemperature    0
+MaxTemperature    0
+MinTemperature    0
+TotalRainfall     0
+AvgRainfall       0
+MaxRainfall       0
+AvgHumidity       0
+AvgWindSpeed      0
+RainyDays         0
+TemperatureStd    0
+RainfallStd       0
+
+Duplicate Rows : 0
+
+Data Types
+--------------------------------------------------
+State              object
+District           object
+Year                int64
+Season             object
+Crop               object
+Area              float64
+Production        float64
+Yield             float64
+AvgTemperature    float64
+MaxTemperature    float64
+MinTemperature    float64
+TotalRainfall     float64
+AvgRainfall       float64
+MaxRainfall       float64
+AvgHumidity       float64
+AvgWindSpeed      float64
+RainyDays           int64
+TemperatureStd    float64
+RainfallStd       float64

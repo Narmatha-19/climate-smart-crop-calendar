@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Crop Recommendation — Climate-Smart Crop Calendar{% endblock %}
+{% set active_page = 'recommendation' %}
+{% block page_title %}{{ t('crop_recommendation') }}{% endblock %}
+{% block page_subtitle %}{{ t('rec_subtitle') }}{% endblock %}
+
+{% block content %}
+
+<div class="card panel">
+  <div class="rec-form-grid">
+    <div class="form-group" style="margin-bottom:0;">
+      <label for="district">{{ t('select_district') }}</label>
+      <select class="form-control" id="district">
+        {% for d in districts %}
+        <option value="{{ d }}" {{ 'selected' if d == farmer['district'] }}>{{ tr_district(d) }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:0;">
+      <label for="crop">{{ t('select_crop') }}</label>
+      <select class="form-control" id="crop">
+        {% for c in crops %}
+        <option value="{{ c }}" {{ 'selected' if c == farmer['preferred_crop'] }}>{{ tr_crop(c) }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:0;">
+      <label for="season">{{ t('select_season') }}</label>
+      <select class="form-control" id="season">
+        {% for s in seasons %}
+        <option value="{{ s }}">{{ tr_season(s) }}
+          {%- if s == 'Kuruvai' %} (Jun - Sep){% elif s == 'Samba' %} (Aug - Jan){% else %} (Jan - Apr){% endif -%}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <button class="btn btn-primary btn-block" id="analyzeBtn" style="margin-top:20px;">
+    <i class="fa-solid fa-magnifying-glass-chart"></i> <span id="analyzeBtnLabel">{{ t('analyze_btn') }}</span>
+  </button>
+
+  <div class="about-rec-grid">
+    <div class="about-rec-item">
+      <i class="fa-solid fa-database"></i>
+      <div>{{ t('historical_data') }}</div>
+    </div>
+    <div class="about-rec-item">
+      <i class="fa-solid fa-microchip"></i>
+      <div>{{ t('ai_prediction_model') }}</div>
+    </div>
+    <div class="about-rec-item">
+      <i class="fa-regular fa-calendar-check"></i>
+      <div>{{ t('smart_calendar') }}</div>
+    </div>
+  </div>
+
+  <p class="text-muted" style="margin-top:18px; font-size:0.85rem;">
+    <strong>{{ t('about_rec_title') }}</strong> {{ t('about_rec_text') }}
+  </p>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const analyzingLabel = {{ t('analyzing') | tojson }};
+  const defaultAnalyzeLabel = {{ t('analyze_btn') | tojson }};
+
+  document.getElementById('analyzeBtn').addEventListener('click', function () {
+    const district = document.getElementById('district').value;
+    const crop = document.getElementById('crop').value;
+    const season = document.getElementById('season').value;
+    const btn = document.getElementById('analyzeBtn');
+    const label = document.getElementById('analyzeBtnLabel');
+
+    btn.disabled = true;
+    label.textContent = analyzingLabel;
+
+    fetch("{{ url_for('analyze') }}", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ district, crop, season })
+    })
+      .then(res => {
+        if (!res.ok) throw new Error("Analysis failed");
+        return res.json();
+      })
+      .then(data => {
+        window.location.href = "/result/" + data.recommendation_id;
+      })
+      .catch(() => {
+        btn.disabled = false;
+        label.textContent = defaultAnalyzeLabel;
+        alert("Something went wrong while analyzing. Please try again.");
+      });
+  });
+</script>
+{% endblock %}

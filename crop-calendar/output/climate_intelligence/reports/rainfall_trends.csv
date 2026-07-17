@@ -1,0 +1,39 @@
+District,Start Year,End Year,Years Analysed,Slope,R2 Score,Percentage Change (%),Trend,Strength
+Ariyalur,2005,2025,21,6.88,0.031,-15.44,Stable,Stable
+Chengalpattu,2005,2025,21,1.91,0.002,-31.88,Stable,Stable
+Chennai,2005,2025,21,4.6,0.008,-30.52,Stable,Stable
+Coimbatore,2005,2025,21,6.11,0.03,-7.33,Stable,Stable
+Cuddalore,2005,2025,21,5.95,0.026,-17.21,Stable,Stable
+Dharmapuri,2005,2025,21,-1.49,0.002,-41.86,Stable,Stable
+Dindigul,2005,2025,21,5.17,0.025,-31.01,Stable,Stable
+Erode,2005,2025,21,9.61,0.09,-27.55,Stable,Stable
+Kallakurichi,2005,2025,21,3.28,0.008,-30.45,Stable,Stable
+Kanchipuram,2005,2025,21,4.6,0.008,-30.52,Stable,Stable
+Kanniyakumari,2005,2025,21,-7.3,0.016,-23.73,Stable,Stable
+Karur,2005,2025,21,0.84,0.001,-35.1,Stable,Stable
+Krishnagiri,2005,2025,21,2.56,0.004,-38.95,Stable,Stable
+Madurai,2005,2025,21,4.67,0.012,-37.07,Stable,Stable
+Mayiladuthurai,2005,2025,21,6.88,0.031,-15.44,Stable,Stable
+Nagapattinam,2005,2025,21,13.35,0.131,0.09,Increasing,Moderate Increase
+Namakkal,2005,2025,21,0.84,0.001,-35.1,Stable,Stable
+Nilgiris,2005,2025,21,0.9,0.001,-20.04,Stable,Stable
+Perambalur,2005,2025,21,4.68,0.019,-24.99,Stable,Stable
+Pudukkottai,2005,2025,21,7.04,0.04,-21.42,Stable,Stable
+Ramanathapuram,2005,2025,21,1.88,0.002,-30.17,Stable,Stable
+Ranipet,2005,2025,21,5.33,0.016,-25.45,Stable,Stable
+Salem,2005,2025,21,-2.09,0.004,-40.9,Stable,Stable
+Sivagangai,2005,2025,21,7.3,0.034,-23.89,Stable,Stable
+Tenkasi,2005,2025,21,-21.76,0.117,-46.55,Decreasing,Strong Decrease
+Thanjavur,2005,2025,21,6.88,0.031,-15.44,Stable,Stable
+Theni,2005,2025,21,2.95,0.004,-36.2,Stable,Stable
+Thoothukudi,2005,2025,21,-9.11,0.024,-50.11,Stable,Stable
+Tiruchirappalli,2005,2025,21,4.68,0.019,-24.99,Stable,Stable
+Tirunelveli,2005,2025,21,-18.7,0.092,-41.9,Decreasing,Moderate Decrease
+Tirupathur,2005,2025,21,3.35,0.007,-33.1,Stable,Stable
+Tiruppur,2005,2025,21,13.35,0.181,-19.62,Increasing,Moderate Increase
+Tiruvallur,2005,2025,21,4.6,0.008,-30.52,Stable,Stable
+Tiruvannamalai,2005,2025,21,1.5,0.001,-29.62,Stable,Stable
+Tiruvarur,2005,2025,21,6.88,0.031,-15.44,Stable,Stable
+Vellore,2005,2025,21,5.33,0.016,-25.45,Stable,Stable
+Viluppuram,2005,2025,21,1.5,0.001,-29.62,Stable,Stable
+Virudhunagar,2005,2025,21,-3.03,0.003,-46.6,Stable,Stable

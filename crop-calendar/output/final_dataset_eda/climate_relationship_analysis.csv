@@ -1,0 +1,12 @@
+Climate_Factor,Category,Records,Average_Value,Average_Yield,Average_Production
+Humidity,High,629,77.37,649.75,4048612.77
+Humidity,Low,13,59.19,928.56,13451461.54
+Humidity,Medium,3868,69.23,757.51,4848098.45
+Rainfall,High,697,1438.32,645.72,5066044.91
+Rainfall,Low,1408,661.27,749.88,4184430.75
+Rainfall,Medium,2405,972.25,767.13,5010885.42
+Temperature,Cool,460,24.17,722.34,1784699.62
+Temperature,Normal,4050,27.58,745.32,5099488.74
+Wind,High,541,3.98,759.68,5240210.14
+Wind,Low,350,1.67,875.73,5999885.14
+Wind,Medium,3619,2.62,727.64,4570040.83
