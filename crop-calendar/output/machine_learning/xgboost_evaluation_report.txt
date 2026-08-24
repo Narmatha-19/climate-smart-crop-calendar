@@ -2,7 +2,7 @@
 XGBOOST MODEL EVALUATION REPORT
 ============================================================
 
-Training R² : 0.9767
-Testing R²  : 0.8087
-MAE         : 222.57
-RMSE        : 926.47
+Training R² : 0.9960
+Testing R²  : 0.9698
+MAE         : 1.45
+RMSE        : 3.82

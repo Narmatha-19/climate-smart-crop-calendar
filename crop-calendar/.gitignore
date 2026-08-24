@@ -1,0 +1,14 @@
+# Secrets — never commit real DB credentials
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Old SQLite database (replaced by PostgreSQL — see PGADMIN_SETUP.md)
+database/*.db
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db

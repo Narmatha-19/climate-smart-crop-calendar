@@ -6,6 +6,12 @@
 
 {% block content %}
 
+{% if window_year %}
+<div class="flash-msg flash-warning" style="margin-bottom:16px;">
+  <i class="fa-solid fa-circle-info"></i> {{ t('window_passed_note').format(year=window_year) }}
+</div>
+{% endif %}
+
 <div class="card panel">
   <div class="section-title">
     <span id="calMonthLabel">{{ t('crop_calendar_title') }}</span>
@@ -27,9 +33,10 @@
   <div class="cal-grid" id="calDays"></div>
 
   <div class="calendar-legend">
-    <div class="legend-chip"><span class="legend-dot green"></span> {{ t('recommended_days') }}</div>
-    <div class="legend-chip"><span class="legend-dot yellow"></span> {{ t('acceptable_days') }}</div>
-    <div class="legend-chip"><span class="legend-dot red"></span> {{ t('high_risk_days') }}</div>
+    <div class="legend-chip"><i class="fa-solid fa-star" style="color:#1a7a34;"></i> {{ t('best_sowing_date') }}</div>
+    <div class="legend-chip"><i class="fa-solid fa-seedling" style="color:#1a7a34;"></i> {{ t('recommended_days') }}</div>
+    <div class="legend-chip"><i class="fa-solid fa-circle-check" style="color:#b7791f;"></i> {{ t('acceptable_days') }}</div>
+    <div class="legend-chip"><i class="fa-solid fa-triangle-exclamation" style="color:var(--red);"></i> {{ t('high_risk_days') }}</div>
   </div>
 
   {% if rec %}

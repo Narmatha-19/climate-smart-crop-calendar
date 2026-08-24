@@ -2,20 +2,20 @@
 RANDOM FOREST MODEL EVALUATION REPORT
 ============================================================
 
-Training R² : 0.9661
-Testing R²  : 0.8913
-MAE         : 157.05
-RMSE        : 698.41
+Training R² : 0.9838
+Testing R²  : 0.9657
+MAE         : 1.19
+RMSE        : 4.08
 
 Top 10 Important Features
 ----------------------------------------
-Year : 0.493623
-Crop : 0.335360
-Season : 0.090663
-Area : 0.019359
-District : 0.009622
-AvgHumidity : 0.006331
-TotalRainfall : 0.005504
-RainyDays : 0.005490
-AvgWindSpeed : 0.005331
-AvgRainfall : 0.005098
+Crop : 0.951715
+Year : 0.007631
+MaxTemperature : 0.007463
+Area : 0.005720
+RainyDays : 0.003742
+AvgHumidity : 0.003266
+AvgWindSpeed : 0.002747
+TemperatureStd : 0.002613
+AvgTemperature : 0.002404
+District : 0.002368

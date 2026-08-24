@@ -6,67 +6,66 @@ Main Flask application.
 Run with:
     python app.py
 
-The app will auto-create the SQLite database (database/crop_calendar.db)
-on first run and seed it with a demo farmer account:
+The app connects to PostgreSQL (see db.py / PGADMIN_SETUP.md for how to
+create the database and configure .env) and auto-creates its tables on
+first run, seeding a demo farmer account:
     Mobile: 9876543210
     Password: demo1234
 """
 
 import os
-import sqlite3
+import json
 import random
 from datetime import datetime, timedelta
 from functools import wraps
 
+from dotenv import load_dotenv
 from flask import (
     Flask, render_template, request, redirect,
     url_for, session, flash, jsonify, send_file
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from models.ml_model import predict_crop_recommendation
+load_dotenv()
+
+from db import get_db
+from models.ml_model import (
+    predict_crop_recommendation, get_climate_trend, get_district_crop_priority,
+    get_crop_profile, format_sowing_window, TN_DISTRICTS, CROPS, SEASONS
+)
 from models.weather_utils import get_weather_forecast, get_climate_alerts
 from translations import (
-    translate, translate_district, translate_crop, translate_season
+    translate, translate_district, translate_crop, translate_season,
+    render_suggestions, render_notification,
 )
 
 # --------------------------------------------------------------------------
 # App configuration
 # --------------------------------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, "database", "crop_calendar.db")
 
 app = Flask(__name__)
-app.secret_key = "climate-smart-crop-calendar-secret-key-change-in-production"
+app.secret_key = os.environ.get(
+    "FLASK_SECRET_KEY", "climate-smart-crop-calendar-secret-key-change-in-production"
+)
 app.config["SESSION_PERMANENT"] = False
 
-TN_DISTRICTS = [
-    "Chennai", "Thanjavur", "Madurai", "Coimbatore",
-    "Trichy", "Salem", "Tirunelveli", "Erode"
-]
-CROPS = ["Rice", "Groundnut", "Cotton", "Sugarcane", "Maize", "Millets", "Banana"]
-SEASONS = ["Kuruvai", "Samba", "Navarai"]
-
-
-# --------------------------------------------------------------------------
-# Database helpers
-# --------------------------------------------------------------------------
-def get_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys = ON")
-    return conn
+# TN_DISTRICTS, CROPS, SEASONS now come from models.ml_model — the same
+# real district/crop/season lists the trained model actually knows.
 
 
 def init_db():
-    os.makedirs(os.path.join(BASE_DIR, "database"), exist_ok=True)
     conn = get_db()
-    cur = conn.cursor()
 
-    cur.executescript(
+    # Postgres uses SERIAL (not AUTOINCREMENT) for auto-incrementing ids,
+    # and TO_CHAR(...) instead of SQLite's datetime('now') for a text-typed
+    # timestamp default - kept as TEXT (not a native TIMESTAMP column) so
+    # the existing templates' farmer['created_at'].split(' ')[0] etc. keep
+    # working unchanged against the same 'YYYY-MM-DD HH:MM:SS' string shape.
+    conn.executescript(
         """
         CREATE TABLE IF NOT EXISTS farmers (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
             mobile TEXT UNIQUE NOT NULL,
             email TEXT,
@@ -74,11 +73,11 @@ def init_db():
             farm_size REAL NOT NULL,
             preferred_crop TEXT NOT NULL,
             password TEXT NOT NULL,
-            created_at TEXT DEFAULT (datetime('now'))
+            created_at TEXT DEFAULT TO_CHAR(CURRENT_TIMESTAMP, 'YYYY-MM-DD HH24:MI:SS')
         );
 
         CREATE TABLE IF NOT EXISTS recommendations (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             farmer_id INTEGER NOT NULL,
             district TEXT NOT NULL,
             crop TEXT NOT NULL,
@@ -94,17 +93,17 @@ def init_db():
             overall_risk TEXT,
             confidence_score INTEGER,
             suggestions TEXT,
-            recommendation_date TEXT DEFAULT (datetime('now')),
+            recommendation_date TEXT DEFAULT TO_CHAR(CURRENT_TIMESTAMP, 'YYYY-MM-DD HH24:MI:SS'),
             FOREIGN KEY (farmer_id) REFERENCES farmers (id)
         );
 
         CREATE TABLE IF NOT EXISTS notifications (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             farmer_id INTEGER NOT NULL,
             category TEXT NOT NULL,
             title TEXT NOT NULL,
             notification_text TEXT NOT NULL,
-            created_at TEXT DEFAULT (datetime('now')),
+            created_at TEXT DEFAULT TO_CHAR(CURRENT_TIMESTAMP, 'YYYY-MM-DD HH24:MI:SS'),
             FOREIGN KEY (farmer_id) REFERENCES farmers (id)
         );
         """
@@ -112,35 +111,41 @@ def init_db():
     conn.commit()
 
     # Seed a demo farmer so the app is explorable immediately
-    cur.execute("SELECT id FROM farmers WHERE mobile = ?", ("9876543210",))
-    if cur.fetchone() is None:
-        cur.execute(
+    existing = conn.execute("SELECT id FROM farmers WHERE mobile = ?", ("9876543210",)).fetchone()
+    if existing is None:
+        # Postgres has no sqlite-style cursor.lastrowid - RETURNING id is
+        # the standard way to get the new row's id back from an INSERT.
+        new_row = conn.execute(
             """INSERT INTO farmers
                (name, mobile, email, district, farm_size, preferred_crop, password)
-               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+               VALUES (?, ?, ?, ?, ?, ?, ?)
+               RETURNING id""",
             (
                 "Ramesh Kumar", "9876543210", "ramesh@example.com",
                 "Thanjavur", 5.0, "Rice",
                 generate_password_hash("demo1234"),
             ),
-        )
-        farmer_id = cur.lastrowid
+        ).fetchone()
+        farmer_id = new_row["id"]
 
+        # title/notification_text store an i18n key (+ JSON params for the
+        # text) rather than pre-rendered English, so notifications also
+        # follow whichever language the viewer currently has selected —
+        # see translations.render_notification().
         demo_notifications = [
-            ("weather", "Heavy Rain Expected Tomorrow",
-             "Heavy rainfall of 80-100mm expected in Thanjavur district."),
-            ("monsoon", "Monsoon Update",
-             "Southwest monsoon has arrived 5 days early in Tamil Nadu."),
-            ("sowing", "Sowing Reminder",
-             "Tomorrow is an ideal day for sowing Rice (Kuruvai)."),
-            ("system", "Recommendation Updated",
-             "Your crop recommendation has been updated. Check now."),
+            ("weather", "notif_heavy_rain_title", "notif_heavy_rain_text",
+             {"rainfall": "80-100mm", "district": "Thanjavur"}),
+            ("monsoon", "notif_monsoon_update_title", "notif_monsoon_update_text",
+             {"days": "5"}),
+            ("sowing", "notif_sowing_reminder_title", "notif_sowing_reminder_text",
+             {"crop": "Rice", "season": "Kharif"}),
+            ("system", "notif_rec_updated_title", "notif_rec_updated_text", {}),
         ]
-        for category, title, text in demo_notifications:
-            cur.execute(
+        for category, title_key, text_key, params in demo_notifications:
+            conn.execute(
                 """INSERT INTO notifications (farmer_id, category, title, notification_text)
                    VALUES (?, ?, ?, ?)""",
-                (farmer_id, category, title, text),
+                (farmer_id, category, title_key, json.dumps({"key": text_key, "params": params})),
             )
         conn.commit()
 
@@ -186,7 +191,7 @@ def inject_i18n():
         "t": lambda key: translate(key, lang),
         "tr_district": lambda name: translate_district(name, lang),
         "tr_crop": lambda name: translate_crop(name, lang),
-        "tr_season": lambda name: translate_season(name, lang),
+        "tr_season": lambda name, crop=None: translate_season(name, lang, crop),
         "current_lang": lang,
     }
 
@@ -322,6 +327,8 @@ def dashboard():
     farmer = current_farmer()
     weather_today, rainfall_trend, temperature_trend = get_weather_forecast(farmer["district"])
     alerts = get_climate_alerts(farmer["district"])
+    grown_crops, other_crops = get_district_crop_priority(farmer["district"])
+    crop_labels = {c: translate_crop(c, get_lang()) for c in CROPS}
 
     conn = get_db()
     unread_count = conn.execute(
@@ -337,6 +344,9 @@ def dashboard():
         temperature_trend=temperature_trend,
         alerts=alerts,
         unread_count=unread_count,
+        top_crops=grown_crops[:4],
+        new_crop_ideas=other_crops[:2],
+        crop_labels=crop_labels,
     )
 
 
@@ -353,19 +363,93 @@ def weather():
 
 
 # --------------------------------------------------------------------------
+# Routes: Monsoon Insights (real 21-year rainfall/temperature trend)
+# --------------------------------------------------------------------------
+@app.route("/monsoon")
+@login_required
+def monsoon():
+    farmer = current_farmer()
+    trend = get_climate_trend(farmer["district"])
+    return render_template(
+        "monsoon.html",
+        farmer=farmer,
+        districts=TN_DISTRICTS,
+        crops=CROPS,
+        seasons=SEASONS,
+        trend=trend,
+    )
+
+
+@app.route("/api/monsoon-trend/<district>")
+@login_required
+def api_monsoon_trend(district):
+    if district not in TN_DISTRICTS:
+        return jsonify({"error": "Invalid district."}), 400
+    trend = get_climate_trend(district)
+    if trend is None:
+        return jsonify({"error": "No climate data for this district."}), 404
+    return jsonify(trend)
+
+
+# --------------------------------------------------------------------------
 # Routes: Crop Recommendation
 # --------------------------------------------------------------------------
 @app.route("/recommendation")
 @login_required
 def recommendation():
     farmer = current_farmer()
+    grown_crops, other_crops = get_district_crop_priority(farmer["district"])
+    crop_labels = {c: translate_crop(c, get_lang()) for c in CROPS}
     return render_template(
         "recommendation.html",
         farmer=farmer,
         districts=TN_DISTRICTS,
         crops=CROPS,
         seasons=SEASONS,
+        grown_crops=grown_crops,
+        other_crops=other_crops,
+        crop_labels=crop_labels,
     )
+
+
+@app.route("/api/district-crops/<district>")
+@login_required
+def api_district_crops(district):
+    """Crop priority for `district`, used by the recommendation form to
+    re-rank the Select Crop dropdown when the farmer picks a different
+    district than the one they registered with."""
+    if district not in TN_DISTRICTS:
+        return jsonify({"error": "Invalid district."}), 400
+    grown, other = get_district_crop_priority(district)
+    return jsonify({"grown": grown, "other": other})
+
+
+@app.route("/api/crop-info/<district>/<crop>")
+@login_required
+def api_crop_info(district, crop):
+    """Powers the dashboard's crop-detail popup: seasons, sowing windows,
+    cultivated area and average climate conditions for one (district, crop)
+    pair, from real historical data."""
+    if district not in TN_DISTRICTS or crop not in CROPS:
+        return jsonify({"error": "Invalid selection."}), 400
+
+    profile = get_crop_profile(district, crop)
+    if profile is None:
+        return jsonify({"error": "No historical cultivation data for this crop in this district."}), 404
+
+    lang = get_lang()
+    seasons = profile.pop("seasons")
+    profile["crop"] = crop
+    profile["crop_label"] = translate_crop(crop, lang)
+    profile["district_label"] = translate_district(district, lang)
+    profile["seasons_display"] = [
+        {
+            "label": translate_season(s, lang, crop),
+            "sowing_window": format_sowing_window(crop, s),
+        }
+        for s in seasons
+    ]
+    return jsonify(profile)
 
 
 @app.route("/api/analyze", methods=["POST"])
@@ -390,22 +474,23 @@ def analyze():
     result = predict_crop_recommendation(district, crop, season)
 
     conn = get_db()
-    conn.execute(
+    new_row = conn.execute(
         """INSERT INTO recommendations
            (farmer_id, district, crop, season, sowing_window, best_sowing_date,
             expected_rainfall, avg_temperature, humidity, wind_speed,
             drought_risk, flood_risk, overall_risk, confidence_score, suggestions)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           RETURNING id""",
         (
             session["farmer_id"], district, crop, season,
             result["sowing_window"], result["best_sowing_date"],
             result["expected_rainfall"], result["avg_temperature"],
             result["humidity"], result["wind_speed"],
             result["drought_risk"], result["flood_risk"], result["overall_risk"],
-            result["confidence_score"], "|".join(result["suggestions"]),
+            result["confidence_score"], json.dumps(result["suggestions"]),
         ),
-    )
-    rec_id = conn.execute("SELECT last_insert_rowid() as id").fetchone()["id"]
+    ).fetchone()
+    rec_id = new_row["id"]
     conn.commit()
     conn.close()
 
@@ -438,13 +523,37 @@ def result(rec_id=None):
         flash("No recommendation found. Please analyze a new one.", "warning")
         return redirect(url_for("recommendation"))
 
-    suggestions = rec["suggestions"].split("|") if rec["suggestions"] else []
-    return render_template("result.html", farmer=farmer, rec=rec, suggestions=suggestions)
+    suggestions = []
+    if rec["suggestions"]:
+        try:
+            codes = json.loads(rec["suggestions"])
+            suggestions = render_suggestions(codes, get_lang())
+        except (ValueError, TypeError):
+            # Legacy rows stored pipe-joined, pre-rendered English text.
+            suggestions = rec["suggestions"].split("|")
+    return render_template(
+        "result.html", farmer=farmer, rec=rec, suggestions=suggestions,
+        window_year=_sowing_window_year(rec),
+    )
 
 
 # --------------------------------------------------------------------------
 # Routes: Calendar
 # --------------------------------------------------------------------------
+def _sowing_window_year(rec):
+    """The best_sowing_date's year if it's later than the current year
+    (i.e. this year's window already passed and the recommendation rolled
+    forward to the next occurrence) - lets the templates surface that
+    context to the farmer instead of silently jumping a year ahead."""
+    if not rec:
+        return None
+    try:
+        rec_year = datetime.strptime(rec["best_sowing_date"], "%d %b %Y").year
+    except (ValueError, TypeError):
+        return None
+    return rec_year if rec_year > datetime.now().year else None
+
+
 @app.route("/calendar")
 @login_required
 def calendar_view():
@@ -455,7 +564,9 @@ def calendar_view():
         (farmer["id"],),
     ).fetchone()
     conn.close()
-    return render_template("calendar.html", farmer=farmer, rec=rec)
+    return render_template(
+        "calendar.html", farmer=farmer, rec=rec, window_year=_sowing_window_year(rec)
+    )
 
 
 @app.route("/api/save-recommendation/<int:rec_id>", methods=["POST"])
@@ -467,11 +578,11 @@ def save_recommendation(rec_id):
         (rec_id, session["farmer_id"]),
     ).fetchone()
     if rec:
+        text_payload = json.dumps({"key": "notif_rec_saved_text", "params": {"crop": rec["crop"]}})
         conn.execute(
             """INSERT INTO notifications (farmer_id, category, title, notification_text)
-               VALUES (?, 'system', 'Recommendation Saved',
-               ? || ' calendar saved to your profile.')""",
-            (session["farmer_id"], rec["crop"]),
+               VALUES (?, 'system', 'notif_rec_saved_title', ?)""",
+            (session["farmer_id"], text_payload),
         )
         conn.commit()
     conn.close()
@@ -481,16 +592,41 @@ def save_recommendation(rec_id):
 # --------------------------------------------------------------------------
 # Routes: Notifications
 # --------------------------------------------------------------------------
+def _localize_notification(row, lang):
+    """title/notification_text hold an i18n key (+ JSON params for the
+    text) for app-generated notifications — see translations.render_notification().
+    Falls back to the raw stored text unchanged for legacy plain-English rows."""
+    title = translate(row["title"], lang)
+
+    text = row["notification_text"]
+    try:
+        payload = json.loads(text)
+        params = dict(payload.get("params", {}))
+        if "season" in params:
+            params["season"] = translate_season(params["season"], lang, params.get("crop"))
+        if "crop" in params:
+            params["crop"] = translate_crop(params["crop"], lang)
+        if "district" in params:
+            params["district"] = translate_district(params["district"], lang)
+        text = render_notification(payload["key"], params, lang)
+    except (ValueError, TypeError, KeyError):
+        pass  # legacy row: notification_text is already plain rendered text
+
+    return {**dict(row), "title": title, "notification_text": text}
+
+
 @app.route("/notifications")
 @login_required
 def notifications():
     farmer = current_farmer()
+    lang = get_lang()
     conn = get_db()
-    all_notifications = conn.execute(
+    rows = conn.execute(
         "SELECT * FROM notifications WHERE farmer_id = ? ORDER BY id DESC",
         (farmer["id"],),
     ).fetchall()
     conn.close()
+    all_notifications = [_localize_notification(row, lang) for row in rows]
     return render_template("notifications.html", farmer=farmer, notifications=all_notifications)
 
 
@@ -536,6 +672,18 @@ def profile():
 # --------------------------------------------------------------------------
 # Entry point
 # --------------------------------------------------------------------------
+# Runs at import time (not just under __main__) so tables get created both
+# for local `python app.py` AND when a production server like gunicorn
+# imports this module directly (gunicorn never executes the __main__ block
+# below, so init_db() has to live out here to run in both cases).
+init_db()
+
 if __name__ == "__main__":
-    init_db()
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    # FLASK_DEBUG defaults to on for local dev (matches the previous
+    # hardcoded debug=True) but must be off wherever this app is reachable
+    # from the public internet - Werkzeug's debugger allows arbitrary code
+    # execution to anyone who can trigger an unhandled exception, so
+    # render.yaml explicitly sets FLASK_DEBUG=0 for the deployed service.
+    debug_mode = os.environ.get("FLASK_DEBUG", "1") == "1"
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=debug_mode, host="0.0.0.0", port=port)

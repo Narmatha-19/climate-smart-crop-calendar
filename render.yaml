@@ -1,0 +1,44 @@
+# Render Blueprint — deploys the web app + a managed PostgreSQL database
+# together. In the Render dashboard: New + -> Blueprint -> point at this
+# repo -> Render reads this file and provisions both automatically.
+# See DEPLOYMENT.md for the full walkthrough.
+
+databases:
+  - name: crop-calendar-db
+    databaseName: crop_calendar
+    user: crop_calendar_user
+    plan: free
+
+services:
+  - type: web
+    name: crop-calendar
+    runtime: python
+    plan: free
+    rootDir: crop-calendar
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn app:app"
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: crop-calendar-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: crop-calendar-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: crop-calendar-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: crop-calendar-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: crop-calendar-db
+          property: password
+      - key: FLASK_SECRET_KEY
+        generateValue: true
+      - key: FLASK_DEBUG
+        value: "0"

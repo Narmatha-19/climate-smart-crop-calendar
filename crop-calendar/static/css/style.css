@@ -127,6 +127,76 @@ input, select, textarea { font-family: inherit; }
 .badge-low { background: #e6f6ea; color: #1a7a34; }
 .badge-moderate { background: var(--amber-bg); color: var(--amber); }
 .badge-high { background: var(--red-bg); color: var(--red); }
+.badge-stable { background: #e6f6ea; color: #1a7a34; }
+.badge-increasing { background: var(--blue-bg); color: var(--blue); }
+.badge-decreasing { background: var(--amber-bg); color: var(--amber); }
+
+.crop-chip-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.badge-crop-grown { background: var(--green-100); color: var(--green-700); font-size: 0.85rem; padding: 7px 14px; cursor: pointer; border: none; }
+.badge-crop-new { background: var(--amber-bg); color: var(--amber); font-size: 0.85rem; padding: 7px 14px; cursor: pointer; border: none; }
+.badge-crop-grown:hover, .badge-crop-new:hover { filter: brightness(0.96); }
+
+/* =========================================================================
+   Crop info modal (dashboard)
+   ========================================================================= */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(20, 30, 24, 0.5);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; z-index: 1000;
+}
+.modal-overlay[hidden] { display: none; }
+.modal-box {
+  background: var(--white); border-radius: var(--radius-md, 14px);
+  max-width: 460px; width: 100%; max-height: 85vh; overflow-y: auto;
+  padding: 26px; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+}
+.modal-close {
+  position: absolute; top: 16px; right: 16px; background: var(--green-100);
+  border: none; width: 32px; height: 32px; border-radius: 50%;
+  color: var(--green-700); font-size: 0.9rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-close:hover { background: var(--green-200, #c8e6c9); }
+.modal-loading, .modal-error { padding: 30px 0; text-align: center; color: var(--ink-500); }
+.crop-modal-title { font-size: 1.3rem; font-weight: 800; color: var(--ink-900, #1a2320); margin-bottom: 4px; padding-right: 30px; }
+.crop-modal-sub { font-size: 0.82rem; color: var(--ink-500); margin-bottom: 18px; }
+.crop-modal-section { margin-bottom: 16px; }
+.crop-modal-label { font-size: 0.74rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ink-500); margin-bottom: 8px; }
+.crop-modal-seasons { display: flex; flex-direction: column; gap: 8px; }
+.crop-modal-season-row {
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--green-100); border-radius: var(--radius-sm); padding: 8px 12px;
+  font-size: 0.85rem;
+}
+.crop-modal-season-row .season-name { font-weight: 700; color: var(--green-700); }
+.crop-modal-season-row .season-window { color: var(--ink-500); font-size: 0.8rem; }
+.crop-modal-yield-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.crop-modal-yield-num { font-size: 1.1rem; font-weight: 800; color: var(--ink-900); }
+.crop-modal-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.crop-modal-stat { background: var(--bg-100, #f4f8f5); border-radius: var(--radius-sm); padding: 10px 12px; }
+.crop-modal-stat .stat-num { font-size: 1.05rem; font-weight: 800; color: var(--ink-900, #1a2320); }
+.crop-modal-stat .stat-cap { font-size: 0.72rem; color: var(--ink-500); margin-top: 2px; }
+.crop-modal-note { font-size: 0.76rem; color: var(--ink-500); margin-top: 14px; display: flex; gap: 6px; align-items: flex-start; }
+
+/* =========================================================================
+   Monsoon Insights page
+   ========================================================================= */
+.trend-stat-row { display: flex; flex-wrap: wrap; gap: 10px 24px; margin-top: 10px; }
+.trend-stat { display: flex; flex-direction: column; gap: 2px; }
+.trend-stat-label { font-size: 0.74rem; color: var(--ink-500); text-transform: uppercase; letter-spacing: 0.03em; }
+.trend-stat-value { font-size: 1rem; font-weight: 700; color: var(--ink-900); }
+.year-callout-row { display: flex; gap: 14px; margin-top: 14px; }
+.year-callout {
+  flex: 1;
+  background: var(--green-50);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+}
+.year-callout-label { font-size: 0.74rem; color: var(--ink-500); text-transform: uppercase; letter-spacing: 0.03em; }
+.year-callout-value { font-size: 1.05rem; font-weight: 700; margin-top: 2px; }
+.r2-note { font-size: 0.78rem; color: var(--ink-500); margin-top: 10px; display: flex; gap: 6px; align-items: flex-start; }
+.r2-note i { margin-top: 2px; color: var(--ink-300); }
 
 .card {
   background: var(--white);
@@ -549,18 +619,44 @@ input, select, textarea { font-family: inherit; }
 .cal-day {
   aspect-ratio: 1 / 0.85;
   border-radius: var(--radius-sm);
-  display: flex; align-items: flex-start; justify-content: flex-start;
+  display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between;
   padding: 8px 10px;
   font-size: 0.85rem; font-weight: 600;
   background: var(--green-50);
   color: var(--ink-500);
   border: 1px solid transparent;
 }
+.cal-daynum { line-height: 1; }
+.cal-icon { align-self: flex-end; font-size: 0.95rem; opacity: 0.9; }
 .cal-day.other-month { opacity: 0.35; }
 .cal-day.recommended { background: #dff5e3; color: #1a7a34; border-color: #b6e6c3; }
 .cal-day.acceptable { background: #fdf1d9; color: #b7791f; border-color: #f6dfa8; }
 .cal-day.risk { background: var(--red-bg); color: var(--red); border-color: #f6c2c2; }
 .cal-day.today { box-shadow: 0 0 0 2px var(--green-700) inset; }
+.cal-day.best-day { box-shadow: 0 0 0 2px #1a7a34 inset; }
+.cal-day.best-day .cal-icon { color: #1a7a34; }
+
+@media (max-width: 560px) {
+  .cal-icon { font-size: 0.8rem; }
+}
+
+/* =========================================================================
+   Print — a focused report instead of the full app chrome
+   ========================================================================= */
+@media print {
+  .sidebar, .menu-toggle, .topbar-right, .flash-stack,
+  .result-actions, .quick-actions,
+  #saveRecBtn, #downloadPdfBtn, #downloadCalBtn, #prevMonthBtn, #nextMonthBtn {
+    display: none !important;
+  }
+  .app-shell { display: block; min-height: 0; }
+  .main-col { display: block; }
+  .topbar { border-bottom: 2px solid var(--ink-900); padding: 0 0 14px; margin-bottom: 18px; }
+  .page-content { padding: 0; }
+  body { background: #fff; }
+  .card, .panel { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+  .grid-2, .grid-4, .result-hero { break-inside: avoid; }
+}
 
 /* =========================================================================
    Notifications Page

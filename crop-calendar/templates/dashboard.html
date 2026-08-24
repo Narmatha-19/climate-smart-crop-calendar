@@ -31,6 +31,37 @@
   </div>
 </div>
 
+<div class="grid-2" style="margin-bottom:24px; align-items:start;">
+  <div class="card panel">
+    <div class="section-title">{{ t('crops_in_your_district') }}</div>
+    <p class="text-muted" style="font-size:0.8rem; margin-top:-6px; margin-bottom:14px;">{{ t('crops_in_your_district_sub') }}</p>
+    <div class="crop-chip-row">
+      {% for c in top_crops %}
+      <button type="button" class="badge badge-crop-grown" data-crop="{{ c }}"><i class="fa-solid fa-seedling"></i> {{ crop_labels[c] }}</button>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if new_crop_ideas %}
+  <div class="card panel">
+    <div class="section-title">{{ t('new_crop_ideas') }}</div>
+    <p class="text-muted" style="font-size:0.8rem; margin-top:-6px; margin-bottom:14px;">{{ t('new_crop_ideas_sub') }}</p>
+    <div class="crop-chip-row">
+      {% for c in new_crop_ideas %}
+      <button type="button" class="badge badge-crop-new" data-crop="{{ c }}"><i class="fa-solid fa-lightbulb"></i> {{ crop_labels[c] }}</button>
+      {% endfor %}
+    </div>
+    <a href="{{ url_for('recommendation') }}" class="btn btn-outline btn-block" style="margin-top:14px;">{{ t('nav_recommendation') }}</a>
+  </div>
+  {% else %}
+  <div class="card panel">
+    <div class="section-title">{{ t('nav_recommendation') }}</div>
+    <p class="text-muted" style="font-size:0.85rem;">{{ t('crops_in_your_district_sub') }}</p>
+    <a href="{{ url_for('recommendation') }}" class="btn btn-primary btn-block" style="margin-top:6px;">{{ t('nav_recommendation') }}</a>
+  </div>
+  {% endif %}
+</div>
+
 <div class="grid-2" style="align-items:start;">
   <div class="card panel">
     <div class="section-title">
@@ -67,6 +98,7 @@
     <div class="section-title">{{ t('quick_actions') }}</div>
     <div class="quick-actions">
       <a href="{{ url_for('recommendation') }}" class="quick-action-btn"><i class="fa-solid fa-seedling"></i> {{ t('nav_recommendation') }}</a>
+      <a href="{{ url_for('monsoon') }}" class="quick-action-btn"><i class="fa-solid fa-cloud-bolt"></i> {{ t('nav_monsoon') }}</a>
       <a href="{{ url_for('weather') }}" class="quick-action-btn"><i class="fa-solid fa-cloud-sun-rain"></i> {{ t('nav_weather') }}</a>
       <a href="{{ url_for('calendar_view') }}" class="quick-action-btn"><i class="fa-regular fa-calendar-days"></i> {{ t('nav_calendar') }}</a>
       <a href="{{ url_for('notifications') }}" class="quick-action-btn"><i class="fa-regular fa-bell"></i> {{ t('nav_notifications') }}</a>
@@ -83,5 +115,6 @@
   const rainfallValues = {{ rainfall_trend['values'] | tojson }};
   const temperatureValues = {{ temperature_trend['values'] | tojson }};
   initDashboardCharts(rainfallLabels, rainfallValues, temperatureValues);
+  initCropInfoTriggers({{ farmer['district'] | tojson }});
 </script>
 {% endblock %}

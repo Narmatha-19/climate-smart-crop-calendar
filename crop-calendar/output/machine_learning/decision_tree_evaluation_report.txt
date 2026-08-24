@@ -2,7 +2,7 @@
 DECISION TREE MODEL EVALUATION REPORT
 ============================================================
 
-Training R² : 0.9587
-Testing R²  : 0.8772
-MAE         : 165.55
-RMSE        : 742.23
+Training R² : 0.9760
+Testing R²  : 0.9527
+MAE         : 1.46
+RMSE        : 4.79

@@ -115,23 +115,37 @@ df["Wind_Category"] = df["AvgWindSpeed"].apply(
 # ==========================================================
 # YIELD CATEGORY
 # ==========================================================
+# Computed PER CROP, not with one global 0.33/0.66 split across every crop.
+# Different crops have completely different natural yield scales (Sesame
+# ~0.5 t/ha vs Sugarcane ~100 t/ha vs Tapioca ~35 t/ha) - a single global
+# quantile split would classify almost every Sugarcane record as "High"
+# and almost every Sesame record as "Low" regardless of how each actually
+# performed relative to its own normal range, so "High/Medium/Low" would
+# really just mean "which crop is this" rather than "how well did it do".
+# Grouping by Crop first means each record is only ever compared against
+# its own crop's history, which is what "yield category" is supposed to
+# measure. This matters more now that 25 crops with very different yield
+# scales share this one dataset (it was already a latent issue with the
+# original 8, just less visible since Sugarcane/Banana were the only
+# high-scale outliers).
 
-yield_q1 = df["Yield"].quantile(0.33)
-yield_q2 = df["Yield"].quantile(0.66)
+def yield_category_per_crop(group):
 
-def yield_category(y):
+    q1 = group.quantile(0.33)
+    q2 = group.quantile(0.66)
 
-    if y <= yield_q1:
-        return "Low"
+    def bucket(y):
+        if y <= q1:
+            return "Low"
+        elif y <= q2:
+            return "Medium"
+        else:
+            return "High"
 
-    elif y <= yield_q2:
-        return "Medium"
+    return group.apply(bucket)
 
-    else:
-        return "High"
-
-df["Yield_Category"] = df["Yield"].apply(
-    yield_category
+df["Yield_Category"] = df.groupby("Crop")["Yield"].transform(
+    lambda group: yield_category_per_crop(group)
 )
 
 # ==========================================================

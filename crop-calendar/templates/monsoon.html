@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+{% block title %}Monsoon Insights — Climate-Smart Crop Calendar{% endblock %}
+{% set active_page = 'monsoon' %}
+{% block page_title %}{{ t('monsoon_page_title') }}{% endblock %}
+{% block page_subtitle %}{{ t('monsoon_page_subtitle') }}{% endblock %}
+
+{% block content %}
+
+<div class="card panel">
+  <div class="form-group" style="max-width:340px; margin-bottom:0;">
+    <label for="districtSelect">{{ t('select_district') }}</label>
+    <select class="form-control" id="districtSelect">
+      {% for d in districts %}
+      <option value="{{ d }}" {{ 'selected' if d == farmer['district'] }}>{{ tr_district(d) }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</div>
+
+<div id="monsoonLoading" class="text-muted" style="margin-top:16px; display:none;">
+  <i class="fa-solid fa-spinner fa-spin"></i> {{ t('loading_trend') }}
+</div>
+
+<div id="monsoonContent" style="margin-top:20px; transition: opacity 0.15s;">
+
+  <div class="result-hero">
+    <div class="card">
+      <div class="result-hero-label"><i class="fa-solid fa-cloud-rain"></i> {{ t('rainfall_trend') }}</div>
+      <div class="result-hero-value"><span id="rainfallTrendBadge" class="badge badge-stable">–</span></div>
+      <div class="result-hero-sub" id="rainfallPctText">–</div>
+    </div>
+    <div class="card">
+      <div class="result-hero-label"><i class="fa-solid fa-temperature-half"></i> {{ t('temperature_trend_card') }}</div>
+      <div class="result-hero-value"><span id="tempTrendBadge" class="badge badge-stable">–</span></div>
+      <div class="result-hero-sub" id="tempPctText">–</div>
+    </div>
+    <div class="card">
+      <div class="result-hero-label"><i class="fa-solid fa-triangle-exclamation"></i> {{ t('climate_risk') }}</div>
+      <div class="result-hero-value"><span id="overallRiskBadge" class="badge badge-low">–</span></div>
+      <div class="result-hero-sub" id="riskDetailText">–</div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="align-items:start;">
+    <div class="card panel">
+      <div class="section-title">
+        {{ t('rainfall_history_chart') }}
+        <span class="text-muted" style="font-weight:500; font-size:0.78rem;" id="rainfallYearsLabel"></span>
+      </div>
+      <div class="chart-wrap"><canvas id="rainfallTrendChart"></canvas></div>
+      <div class="year-callout-row">
+        <div class="year-callout">
+          <div class="year-callout-label">{{ t('driest_year') }}</div>
+          <div class="year-callout-value" id="driestYearValue">–</div>
+        </div>
+        <div class="year-callout">
+          <div class="year-callout-label">{{ t('wettest_year') }}</div>
+          <div class="year-callout-value" id="wettestYearValue">–</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card panel">
+      <div class="section-title">
+        {{ t('temperature_history_chart') }}
+        <span class="text-muted" style="font-weight:500; font-size:0.78rem;" id="tempYearsLabel"></span>
+      </div>
+      <div class="chart-wrap"><canvas id="temperatureTrendChart"></canvas></div>
+      <div class="r2-note"><i class="fa-solid fa-circle-info"></i> <span>{{ t('r2_note') }}</span></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="card panel" style="margin-top:20px;">
+  <div class="section-title">{{ t('get_sowing_recommendation') }}</div>
+  <p class="text-muted" style="font-size:0.85rem; margin-top:-6px; margin-bottom:14px;">{{ t('sowing_rec_subtitle') }}</p>
+
+  <div class="rec-form-grid">
+    <div class="form-group" style="margin-bottom:0;">
+      <label for="cropSelect2">{{ t('select_crop') }}</label>
+      <select class="form-control" id="cropSelect2">
+        {% for c in crops %}
+        <option value="{{ c }}" {{ 'selected' if c == farmer['preferred_crop'] }}>{{ tr_crop(c) }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:0;">
+      <label for="seasonSelect2">{{ t('select_season') }}</label>
+      <select class="form-control" id="seasonSelect2">
+        {% for s in seasons %}
+        <option value="{{ s }}">{{ tr_season(s) }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <button class="btn btn-primary btn-block" id="monsoonAnalyzeBtn" style="margin-top:20px;">
+    <i class="fa-solid fa-magnifying-glass-chart"></i> <span id="monsoonAnalyzeBtnLabel">{{ t('analyze_btn') }}</span>
+  </button>
+
+  <div id="monsoonRecResult" style="display:none; margin-top:20px;">
+    <div class="result-hero" style="grid-template-columns: 1fr 1fr;">
+      <div class="card">
+        <div class="result-hero-label"><i class="fa-regular fa-calendar-check"></i> {{ t('recommended_window') }}</div>
+        <div class="result-hero-value" style="font-size:1rem;" id="monsoonSowingWindow">–</div>
+        <div class="result-hero-sub">{{ t('best_sowing_date') }}: <strong id="monsoonBestDate">–</strong></div>
+      </div>
+      <div class="card">
+        <div class="result-hero-label"><i class="fa-solid fa-gauge-high"></i> {{ t('model_confidence') }}</div>
+        <div class="result-hero-value" id="monsoonConfidence">–</div>
+        <div class="result-hero-sub"><span id="monsoonOverallRiskBadge" class="badge badge-low">–</span></div>
+      </div>
+    </div>
+    <a href="#" id="monsoonViewResultLink" class="btn btn-outline btn-block" style="margin-top:14px;">
+      {{ t('view_full_result') }} <i class="fa-solid fa-arrow-right"></i>
+    </a>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+  const monsoonRiskLabelKey = {
+    'Low': {{ t('risk_low') | tojson }},
+    'Moderate': {{ t('risk_moderate') | tojson }},
+    'High': {{ t('risk_high') | tojson }}
+  };
+  const monsoonTrendLabelKey = {
+    'Increasing': {{ t('trend_increasing') | tojson }},
+    'Stable': {{ t('trend_stable') | tojson }},
+    'Decreasing': {{ t('trend_decreasing') | tojson }}
+  };
+
+  function renderMonsoonPanel(data) {
+    renderMonsoonCharts(data);
+
+    const rt = data.rainfall_trend;
+    const tt = data.temperature_trend;
+
+    const rBadge = document.getElementById('rainfallTrendBadge');
+    rBadge.textContent = monsoonTrendLabelKey[rt.trend] || rt.trend;
+    rBadge.className = 'badge badge-' + rt.trend.toLowerCase();
+    document.getElementById('rainfallPctText').textContent =
+      rt.pct_change.toFixed(1) + '% (' + rt.strength + ', ' + rt.start_year + '–' + rt.end_year + ')';
+    document.getElementById('rainfallYearsLabel').textContent = rt.start_year + '–' + rt.end_year;
+
+    const tBadge = document.getElementById('tempTrendBadge');
+    tBadge.textContent = monsoonTrendLabelKey[tt.trend] || tt.trend;
+    tBadge.className = 'badge badge-' + tt.trend.toLowerCase();
+    document.getElementById('tempPctText').textContent =
+      tt.pct_change.toFixed(1) + '% (' + tt.strength + ', ' + tt.start_year + '–' + tt.end_year + ')';
+    document.getElementById('tempYearsLabel').textContent = tt.start_year + '–' + tt.end_year;
+
+    const overallBadge = document.getElementById('overallRiskBadge');
+    overallBadge.textContent = monsoonRiskLabelKey[data.overall_risk] || data.overall_risk;
+    overallBadge.className = 'badge badge-' + data.overall_risk.toLowerCase();
+    document.getElementById('riskDetailText').textContent =
+      'Drought: ' + (monsoonRiskLabelKey[data.drought_risk] || data.drought_risk) +
+      ' · Flood: ' + (monsoonRiskLabelKey[data.flood_risk] || data.flood_risk);
+
+    document.getElementById('driestYearValue').textContent = data.driest_year.year + ' (' + data.driest_year.rainfall + ' mm)';
+    document.getElementById('wettestYearValue').textContent = data.wettest_year.year + ' (' + data.wettest_year.rainfall + ' mm)';
+
+    document.getElementById('monsoonRecResult').style.display = 'none';
+  }
+
+  {% if trend %}
+  renderMonsoonPanel({{ trend | tojson }});
+  {% endif %}
+
+  document.getElementById('districtSelect').addEventListener('change', function () {
+    const district = this.value;
+    const loading = document.getElementById('monsoonLoading');
+    const content = document.getElementById('monsoonContent');
+    loading.style.display = 'block';
+    content.style.opacity = '0.4';
+
+    fetch('/api/monsoon-trend/' + encodeURIComponent(district))
+      .then(res => res.json())
+      .then(data => {
+        loading.style.display = 'none';
+        content.style.opacity = '1';
+        if (!data.error) renderMonsoonPanel(data);
+      })
+      .catch(() => {
+        loading.style.display = 'none';
+        content.style.opacity = '1';
+      });
+  });
+
+  document.getElementById('monsoonAnalyzeBtn').addEventListener('click', function () {
+    const district = document.getElementById('districtSelect').value;
+    const crop = document.getElementById('cropSelect2').value;
+    const season = document.getElementById('seasonSelect2').value;
+    const btn = this;
+    const label = document.getElementById('monsoonAnalyzeBtnLabel');
+    const analyzingLabel = {{ t('analyzing') | tojson }};
+    const defaultLabel = {{ t('analyze_btn') | tojson }};
+
+    btn.disabled = true;
+    label.textContent = analyzingLabel;
+
+    fetch("{{ url_for('analyze') }}", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ district, crop, season })
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Analysis failed');
+        return res.json();
+      })
+      .then(data => {
+        btn.disabled = false;
+        label.textContent = defaultLabel;
+        document.getElementById('monsoonSowingWindow').textContent = data.sowing_window;
+        document.getElementById('monsoonBestDate').textContent = data.best_sowing_date;
+        document.getElementById('monsoonConfidence').textContent = data.confidence_score + '%';
+        const riskBadge = document.getElementById('monsoonOverallRiskBadge');
+        riskBadge.textContent = monsoonRiskLabelKey[data.overall_risk] || data.overall_risk;
+        riskBadge.className = 'badge badge-' + data.overall_risk.toLowerCase();
+        document.getElementById('monsoonViewResultLink').href = '/result/' + data.recommendation_id;
+        document.getElementById('monsoonRecResult').style.display = 'block';
+      })
+      .catch(() => {
+        btn.disabled = false;
+        label.textContent = defaultLabel;
+        alert('Something went wrong while analyzing. Please try again.');
+      });
+  });
+</script>
+{% endblock %}

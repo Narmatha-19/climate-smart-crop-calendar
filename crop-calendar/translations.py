@@ -17,11 +17,35 @@ TRANSLATIONS = {
         "brand_sub": "CROP CALENDAR",
         "nav_dashboard": "Dashboard",
         "nav_recommendation": "Crop Recommendation",
+        "nav_monsoon": "Monsoon Insights",
         "nav_weather": "Weather Forecast",
         "nav_calendar": "My Calendar",
         "nav_notifications": "Notifications",
         "nav_profile": "Profile",
         "nav_logout": "Logout",
+
+        # ---- Monsoon Insights ----
+        "monsoon_page_title": "Monsoon & Climate Trends",
+        "monsoon_page_subtitle": "Real 21-year rainfall and temperature analysis for your district (2005-2025)",
+        "rainfall_trend": "Rainfall Trend",
+        "temperature_trend_card": "Temperature Trend",
+        "climate_risk": "Climate Risk",
+        "years_analysed": "Years Analysed",
+        "pct_change": "Change over period",
+        "driest_year": "Driest Year",
+        "wettest_year": "Wettest Year",
+        "rainfall_history_chart": "Rainfall History",
+        "temperature_history_chart": "Temperature History",
+        "observed": "Observed",
+        "trend_line": "Trend Line",
+        "get_sowing_recommendation": "Get a Sowing Recommendation",
+        "sowing_rec_subtitle": "See how this district's climate trend shapes the recommended sowing window",
+        "view_full_result": "View Full Result",
+        "r2_note": "Lower R² means higher year-to-year variability — treat this as a long-term signal, not a yearly forecast.",
+        "trend_increasing": "Increasing",
+        "trend_stable": "Stable",
+        "trend_decreasing": "Decreasing",
+        "loading_trend": "Loading climate trend...",
 
         # ---- Splash ----
         "splash_eyebrow": "Built for Tamil Nadu Farmers",
@@ -143,6 +167,15 @@ TRANSLATIONS = {
         "risk_moderate": "Moderate",
         "risk_high": "High",
 
+        # ---- AI Suggestions (rendered from structured codes, see
+        #      translations.render_suggestions(), so they follow whichever
+        #      language is currently selected even for old recommendations) ----
+        "sugg_prepare_land": "Prepare nursery/land at least 5 days before {date}.",
+        "sugg_drainage_ready": "Keep drainage channels ready before sowing.",
+        "sugg_irrigation_plan": "Plan supplemental irrigation in case of a dry spell.",
+        "sugg_short_duration_variety": "Consider a short-duration crop variety to reduce exposure.",
+        "sugg_rainfall_trend_note": "Rainfall trend for this district is {trend} ({pct:+.1f}% over the analysed period).",
+
         # ---- Calendar ----
         "crop_calendar_title": "Crop Calendar",
         "based_on_latest": "Based on your latest recommendation",
@@ -156,6 +189,34 @@ TRANSLATIONS = {
         "saved": "Saved",
         "no_rec_generated": "You haven't generated a crop recommendation yet.",
         "get_one_now": "Get one now",
+        "window_passed_note": "This season's sowing window has already passed for this year, so the window shown below is for {year}.",
+
+        # ---- District crop priority (recommendation form + dashboard) ----
+        "grown_in_district": "Grown in {district}",
+        "other_crops": "Other Crops",
+        "crops_in_your_district": "Crops Grown in Your District",
+        "crops_in_your_district_sub": "Ranked by real cultivation data for your district",
+        "new_crop_ideas": "New Crop Ideas for Your Area",
+        "new_crop_ideas_sub": "Not commonly grown here yet — worth exploring",
+
+        # ---- Crop detail popup (dashboard) ----
+        "crop_info_loading": "Loading crop details...",
+        "crop_info_error": "Couldn't load details for this crop right now.",
+        "no_crop_data": "No historical cultivation data for this crop in your district yet.",
+        "best_seasons": "Seasons Cultivated",
+        "sowing_window_label": "Sowing Window",
+        "total_area_cultivated": "Total Area Cultivated",
+        "typical_climate": "Typical Climate During Cultivation",
+        "years_of_data": "Years of Historical Data",
+        "hectares": "hectares",
+        "close": "Close",
+        "get_recommendation_for_crop": "Get a Recommendation for This Crop",
+        "avg_yield": "Average Yield",
+        "tonnes_per_hectare": "t/ha",
+        "yield_level": "Yield Level Here",
+        "yield_low": "Low",
+        "yield_medium": "Medium",
+        "yield_high": "High",
 
         # ---- Notifications ----
         "notifications_title": "Notifications",
@@ -166,6 +227,20 @@ TRANSLATIONS = {
         "tab_sowing": "Sowing Reminders",
         "tab_system": "System Alerts",
         "no_notifications": "No notifications yet.",
+
+        # ---- App-generated notification templates (rendered from a stored
+        #      key + params, see translations.render_notification(), so
+        #      they also follow whichever language is currently selected) ----
+        "notif_heavy_rain_title": "Heavy Rainfall Alert",
+        "notif_heavy_rain_text": "Heavy rainfall of {rainfall} expected in {district} district.",
+        "notif_monsoon_update_title": "Monsoon Update",
+        "notif_monsoon_update_text": "Southwest monsoon has arrived {days} days early in Tamil Nadu.",
+        "notif_sowing_reminder_title": "Sowing Reminder",
+        "notif_sowing_reminder_text": "Tomorrow is an ideal day for sowing {crop} ({season}).",
+        "notif_rec_updated_title": "Recommendation Updated",
+        "notif_rec_updated_text": "Your crop recommendation has been updated. Check now.",
+        "notif_rec_saved_title": "Recommendation Saved",
+        "notif_rec_saved_text": "{crop} calendar saved to your profile.",
 
         # ---- Profile ----
         "farmer_profile": "Farmer Profile",
@@ -188,11 +263,34 @@ TRANSLATIONS = {
         "brand_sub": "பயிர் நாட்காட்டி",
         "nav_dashboard": "டாஷ்போர்டு",
         "nav_recommendation": "பயிர் பரிந்துரை",
+        "nav_monsoon": "பருவமழை நுண்ணறிவு",
         "nav_weather": "வானிலை முன்னறிவிப்பு",
         "nav_calendar": "எனது நாட்காட்டி",
         "nav_notifications": "அறிவிப்புகள்",
         "nav_profile": "சுயவிவரம்",
         "nav_logout": "வெளியேறு",
+
+        "monsoon_page_title": "பருவமழை மற்றும் காலநிலை போக்குகள்",
+        "monsoon_page_subtitle": "உங்கள் மாவட்டத்திற்கான உண்மையான 21 ஆண்டு மழைப்பொழிவு மற்றும் வெப்பநிலை பகுப்பாய்வு (2005-2025)",
+        "rainfall_trend": "மழைப்பொழிவு போக்கு",
+        "temperature_trend_card": "வெப்பநிலை போக்கு",
+        "climate_risk": "காலநிலை அபாயம்",
+        "years_analysed": "ஆய்வு செய்யப்பட்ட ஆண்டுகள்",
+        "pct_change": "காலப்பகுதியில் மாற்றம்",
+        "driest_year": "வறண்ட ஆண்டு",
+        "wettest_year": "அதிக மழை பெய்த ஆண்டு",
+        "rainfall_history_chart": "மழைப்பொழிவு வரலாறு",
+        "temperature_history_chart": "வெப்பநிலை வரலாறு",
+        "observed": "கவனிக்கப்பட்டது",
+        "trend_line": "போக்கு கோடு",
+        "get_sowing_recommendation": "விதைப்பு பரிந்துரையைப் பெறுங்கள்",
+        "sowing_rec_subtitle": "இந்த மாவட்டத்தின் காலநிலை போக்கு பரிந்துரைக்கப்பட்ட விதைப்பு காலத்தை எவ்வாறு வடிவமைக்கிறது எனப் பாருங்கள்",
+        "view_full_result": "முழு முடிவைக் காண்க",
+        "r2_note": "குறைந்த R² மதிப்பு ஆண்டுதோறும் அதிக மாறுபாட்டைக் குறிக்கிறது — இதை ஒரு நீண்டகால போக்காகக் கருதவும், வருடாந்திர முன்னறிவிப்பாக அல்ல.",
+        "trend_increasing": "அதிகரிக்கிறது",
+        "trend_stable": "நிலையானது",
+        "trend_decreasing": "குறைகிறது",
+        "loading_trend": "காலநிலை போக்கு ஏற்றப்படுகிறது...",
 
         "splash_eyebrow": "தமிழ்நாடு விவசாயிகளுக்காக உருவாக்கப்பட்டது",
         "splash_title_pre": "AI-இயங்கும்",
@@ -306,6 +404,12 @@ TRANSLATIONS = {
         "risk_moderate": "மிதமானது",
         "risk_high": "அதிகம்",
 
+        "sugg_prepare_land": "{date} க்கு குறைந்தது 5 நாட்களுக்கு முன் நாற்றங்கால்/நிலத்தைத் தயார் செய்யவும்.",
+        "sugg_drainage_ready": "விதைப்பதற்கு முன் வடிகால் கால்வாய்களைத் தயாராக வைக்கவும்.",
+        "sugg_irrigation_plan": "வறண்ட காலத்திற்கு கூடுதல் நீர்ப்பாசனத்தைத் திட்டமிடுங்கள்.",
+        "sugg_short_duration_variety": "அபாயத்தைக் குறைக்க குறுகிய கால பயிர் ரகத்தைக் கருத்தில் கொள்ளுங்கள்.",
+        "sugg_rainfall_trend_note": "இந்த மாவட்டத்தின் மழைப்பொழிவு போக்கு {trend} ({pct:+.1f}% ஆய்வு செய்யப்பட்ட காலப்பகுதியில்).",
+
         "crop_calendar_title": "பயிர் நாட்காட்டி",
         "based_on_latest": "உங்கள் சமீபத்திய பரிந்துரையின் அடிப்படையில்",
         "no_rec_yet": "இன்னும் பரிந்துரை இல்லை",
@@ -318,6 +422,32 @@ TRANSLATIONS = {
         "saved": "சேமிக்கப்பட்டது",
         "no_rec_generated": "நீங்கள் இன்னும் பயிர் பரிந்துரையை உருவாக்கவில்லை.",
         "get_one_now": "இப்போது பெறுங்கள்",
+        "window_passed_note": "இந்த பருவத்தின் விதைப்புக் காலம் இந்த ஆண்டிற்கு ஏற்கனவே கடந்துவிட்டது, எனவே கீழே காட்டப்பட்டுள்ள காலம் {year} ஆண்டிற்கானது.",
+
+        "grown_in_district": "{district} இல் பயிரிடப்படுபவை",
+        "other_crops": "மற்ற பயிர்கள்",
+        "crops_in_your_district": "உங்கள் மாவட்டத்தில் பயிரிடப்படும் பயிர்கள்",
+        "crops_in_your_district_sub": "உங்கள் மாவட்டத்தின் உண்மையான சாகுபடி தரவின் அடிப்படையில் தரவரிசைப்படுத்தப்பட்டது",
+        "new_crop_ideas": "உங்கள் பகுதிக்கான புதிய பயிர் யோசனைகள்",
+        "new_crop_ideas_sub": "இங்கு பொதுவாக பயிரிடப்படவில்லை — முயற்சிக்கத் தகுந்தது",
+
+        "crop_info_loading": "பயிர் விவரங்கள் ஏற்றப்படுகின்றன...",
+        "crop_info_error": "இப்போது இந்த பயிரின் விவரங்களை ஏற்ற முடியவில்லை.",
+        "no_crop_data": "உங்கள் மாவட்டத்தில் இந்த பயிருக்கான வரலாற்று சாகுபடி தரவு இன்னும் இல்லை.",
+        "best_seasons": "பயிரிடப்படும் பருவங்கள்",
+        "sowing_window_label": "விதைப்பு காலம்",
+        "total_area_cultivated": "மொத்த சாகுபடி பரப்பளவு",
+        "typical_climate": "சாகுபடியின்போது வழக்கமான காலநிலை",
+        "years_of_data": "வரலாற்று தரவு ஆண்டுகள்",
+        "hectares": "ஹெக்டேர்",
+        "close": "மூடு",
+        "get_recommendation_for_crop": "இந்த பயிருக்கான பரிந்துரையைப் பெறுங்கள்",
+        "avg_yield": "சராசரி விளைச்சல்",
+        "tonnes_per_hectare": "டன்/ஹெக்டேர்",
+        "yield_level": "இங்கு விளைச்சல் நிலை",
+        "yield_low": "குறைவு",
+        "yield_medium": "நடுத்தரம்",
+        "yield_high": "அதிகம்",
 
         "notifications_title": "அறிவிப்புகள்",
         "notifications_subtitle": "முக்கிய எச்சரிக்கைகள் மற்றும் பரிந்துரைகளுடன் புதுப்பித்த நிலையில் இருங்கள்",
@@ -327,6 +457,17 @@ TRANSLATIONS = {
         "tab_sowing": "விதைப்பு நினைவூட்டல்கள்",
         "tab_system": "கணினி எச்சரிக்கைகள்",
         "no_notifications": "இன்னும் அறிவிப்புகள் இல்லை.",
+
+        "notif_heavy_rain_title": "கனமழை எச்சரிக்கை",
+        "notif_heavy_rain_text": "{district} மாவட்டத்தில் {rainfall} கனமழை எதிர்பார்க்கப்படுகிறது.",
+        "notif_monsoon_update_title": "பருவமழை புதுப்பிப்பு",
+        "notif_monsoon_update_text": "தென்மேற்கு பருவமழை தமிழ்நாட்டில் {days} நாட்கள் முன்னதாக வந்துவிட்டது.",
+        "notif_sowing_reminder_title": "விதைப்பு நினைவூட்டல்",
+        "notif_sowing_reminder_text": "நாளை {crop} ({season}) விதைப்பதற்கு ஏற்ற நாள்.",
+        "notif_rec_updated_title": "பரிந்துரை புதுப்பிக்கப்பட்டது",
+        "notif_rec_updated_text": "உங்கள் பயிர் பரிந்துரை புதுப்பிக்கப்பட்டுள்ளது. இப்போது சரிபார்க்கவும்.",
+        "notif_rec_saved_title": "பரிந்துரை சேமிக்கப்பட்டது",
+        "notif_rec_saved_text": "{crop} நாட்காட்டி உங்கள் சுயவிவரத்தில் சேமிக்கப்பட்டது.",
 
         "farmer_profile": "விவசாயி சுயவிவரம்",
         "profile_subtitle": "உங்கள் தனிப்பட்ட தகவல் மற்றும் விருப்பங்களை நிர்வகிக்கவும்",
@@ -348,30 +489,93 @@ TRANSLATIONS = {
 # ---- Localized display names for dropdowns / labels (values sent to the
 #      backend stay in English so app.py logic never has to change) ----
 DISTRICT_TA = {
+    "Ariyalur": "அரியலூர்",
+    "Chengalpattu": "செங்கல்பட்டு",
     "Chennai": "சென்னை",
-    "Thanjavur": "தஞ்சாவூர்",
-    "Madurai": "மதுரை",
     "Coimbatore": "கோயம்புத்தூர்",
-    "Trichy": "திருச்சி",
-    "Salem": "சேலம்",
-    "Tirunelveli": "திருநெல்வேலி",
+    "Cuddalore": "கடலூர்",
+    "Dharmapuri": "தர்மபுரி",
+    "Dindigul": "திண்டுக்கல்",
     "Erode": "ஈரோடு",
+    "Kallakurichi": "கள்ளக்குறிச்சி",
+    "Kanchipuram": "காஞ்சிபுரம்",
+    "Kanniyakumari": "கன்னியாகுமரி",
+    "Karur": "கரூர்",
+    "Krishnagiri": "கிருஷ்ணகிரி",
+    "Madurai": "மதுரை",
+    "Mayiladuthurai": "மயிலாடுதுறை",
+    "Nagapattinam": "நாகப்பட்டினம்",
+    "Namakkal": "நாமக்கல்",
+    "Nilgiris": "நீலகிரி",
+    "Perambalur": "பெரம்பலூர்",
+    "Pudukkottai": "புதுக்கோட்டை",
+    "Ramanathapuram": "இராமநாதபுரம்",
+    "Ranipet": "ராணிப்பேட்டை",
+    "Salem": "சேலம்",
+    "Sivagangai": "சிவகங்கை",
+    "Tenkasi": "தென்காசி",
+    "Thanjavur": "தஞ்சாவூர்",
+    "Theni": "தேனி",
+    "Thoothukudi": "தூத்துக்குடி",
+    "Tiruchirappalli": "திருச்சிராப்பள்ளி",
+    "Tirunelveli": "திருநெல்வேலி",
+    "Tirupathur": "திருப்பத்தூர்",
+    "Tiruppur": "திருப்பூர்",
+    "Tiruvallur": "திருவள்ளூர்",
+    "Tiruvannamalai": "திருவண்ணாமலை",
+    "Tiruvarur": "திருவாரூர்",
+    "Vellore": "வேலூர்",
+    "Viluppuram": "விழுப்புரம்",
+    "Virudhunagar": "விருதுநகர்",
 }
 
 CROP_TA = {
     "Rice": "நெல்",
     "Groundnut": "நிலக்கடலை",
-    "Cotton": "பருத்தி",
+    "Cotton(lint)": "பருத்தி",
     "Sugarcane": "கரும்பு",
     "Maize": "சோளம்",
-    "Millets": "சிறுதானியங்கள்",
+    "Bajra": "கம்பு",
+    "Ragi": "கேழ்வரகு",
     "Banana": "வாழை",
+
+    "Urad": "உளுந்து",
+    "Moong(Green Gram)": "பாசிப்பயறு",
+    "Sesamum": "எள்",
+    "Jowar": "சோளம் (ஜோவர்)",
+    "Sunflower": "சூரியகாந்தி",
+    "Horse-gram": "கொள்ளு",
+    "Onion": "வெங்காயம்",
+    "Arhar/Tur": "துவரை",
+    "Dry chillies": "காய்ந்த மிளகாய்",
+    "Tapioca": "மரவள்ளிக்கிழங்கு",
+    "Turmeric": "மஞ்சள்",
+    "Cashewnut": "முந்திரி",
+    "Small millets": "சிறுதானியங்கள்",
+    "Coriander": "கொத்தமல்லி",
+    "Sweet potato": "சர்க்கரைவள்ளிக்கிழங்கு",
+    "Gram": "கொண்டைக்கடலை",
+    "Tobacco": "புகையிலை",
 }
 
+# Real government-census seasons the trained model was built on.
 SEASON_TA = {
-    "Kuruvai": "குறுவை",
-    "Samba": "சம்பா",
-    "Navarai": "நவரை",
+    "Kharif": "காரீஃப்",
+    "Rabi": "இரபி",
+    "Summer": "கோடை",
+    "Autumn": "இலையுதிர்காலம்",
+    "Winter": "குளிர்காலம்",
+    "Whole Year": "முழு ஆண்டு",
+}
+
+# Familiar Tamil Nadu paddy-season names — agronomically meaningful only for
+# Rice (Kharif≈Kuruvai, Winter≈Samba, Summer≈Navarai). Shown as a bracketed
+# annotation for Rice only; other crops just show the plain season name,
+# since forcing rice-specific season names onto them would be inaccurate.
+RICE_SEASON_LABEL = {
+    "Kharif": ("(Kuruvai)", "(குறுவை)"),
+    "Winter": ("(Samba)", "(சம்பா)"),
+    "Summer": ("(Navarai)", "(நவரை)"),
 }
 
 
@@ -386,9 +590,58 @@ def translate_district(name, lang="en"):
     return DISTRICT_TA.get(name, name) if lang == "ta" else name
 
 
+# Rice is what the dataset/model call it; "Paddy" is what most Tamil Nadu
+# farmers and search results call the same crop, so show both in English
+# to avoid it reading as if paddy isn't covered by the app.
+_CROP_EN_ALIAS = {"Rice": "Rice (Paddy)"}
+
+
 def translate_crop(name, lang="en"):
-    return CROP_TA.get(name, name) if lang == "ta" else name
+    if lang == "ta":
+        return CROP_TA.get(name, name)
+    return _CROP_EN_ALIAS.get(name, name)
 
 
-def translate_season(name, lang="en"):
-    return SEASON_TA.get(name, name) if lang == "ta" else name
+def translate_season(name, lang="en", crop=None):
+    base = SEASON_TA.get(name, name) if lang == "ta" else name
+    if crop == "Rice" and name in RICE_SEASON_LABEL:
+        suffix = RICE_SEASON_LABEL[name][1 if lang == "ta" else 0]
+        return f"{base} {suffix}"
+    return base
+
+
+def render_suggestions(codes, lang="en"):
+    """Renders the structured suggestion codes from
+    models.ml_model.generate_suggestions() into text in the current
+    session language. Stored as JSON (key + params) in the recommendations
+    table instead of pre-rendered English, so a recommendation created in
+    English still shows correctly if the viewer later switches to Tamil.
+    Falls back to a bare key (or the raw legacy string, see app.py) if a
+    code isn't recognised."""
+    rendered = []
+    for item in codes:
+        if isinstance(item, str):
+            # Legacy rows stored plain pre-rendered English text.
+            rendered.append(item)
+            continue
+        key = item.get("key")
+        params = {k: v for k, v in item.items() if k != "key"}
+        if key == "rainfall_trend_note":
+            params["trend"] = translate("trend_" + str(params.get("trend", "stable")).lower(), lang)
+        template = translate(f"sugg_{key}", lang)
+        try:
+            rendered.append(template.format(**params))
+        except (KeyError, ValueError, IndexError):
+            rendered.append(template)
+    return rendered
+
+
+def render_notification(key, params, lang="en"):
+    """Renders an app-generated notification's title/text from a stored
+    i18n key + params dict, so notifications also follow the viewer's
+    current language. See render_suggestions() for the same pattern."""
+    template = translate(key, lang)
+    try:
+        return template.format(**(params or {}))
+    except (KeyError, ValueError, IndexError):
+        return template

@@ -126,6 +126,95 @@ function initDashboardCharts(labels, rainfallValues, temperatureValues) {
 }
 
 /* =========================================================================
+   Monsoon Insights Charts (Chart.js) — real 2005-2025 yearly series with a
+   linear-regression trend line overlay, one chart for rainfall and one for
+   temperature. Re-created (not just updated) on each district switch since
+   the underlying label/data arrays change length.
+   ========================================================================= */
+let monsoonRainfallChart = null;
+let monsoonTempChart = null;
+
+function renderMonsoonCharts(data) {
+  const rainfallCtx = document.getElementById('rainfallTrendChart');
+  if (rainfallCtx) {
+    if (monsoonRainfallChart) monsoonRainfallChart.destroy();
+    monsoonRainfallChart = new Chart(rainfallCtx, {
+      type: 'line',
+      data: {
+        labels: data.years,
+        datasets: [
+          {
+            label: 'Observed',
+            data: data.rainfall,
+            borderColor: '#2e7d32',
+            backgroundColor: 'rgba(46, 125, 50, 0.1)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 2,
+          },
+          {
+            label: 'Trend line',
+            data: data.rainfall_trendline,
+            borderColor: '#d97706',
+            borderDash: [6, 4],
+            pointRadius: 0,
+            fill: false,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: true, position: 'top', labels: { boxWidth: 12, font: { size: 11 } } } },
+        scales: {
+          y: { grid: { color: '#eef4ef' }, title: { display: true, text: 'mm/year', font: { size: 11 } } },
+          x: { grid: { display: false }, ticks: { maxTicksLimit: 8 } },
+        },
+      },
+    });
+  }
+
+  const tempCtx = document.getElementById('temperatureTrendChart');
+  if (tempCtx) {
+    if (monsoonTempChart) monsoonTempChart.destroy();
+    monsoonTempChart = new Chart(tempCtx, {
+      type: 'line',
+      data: {
+        labels: data.years,
+        datasets: [
+          {
+            label: 'Observed',
+            data: data.temperature,
+            borderColor: '#e05a2b',
+            backgroundColor: 'rgba(224, 90, 43, 0.1)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 2,
+          },
+          {
+            label: 'Trend line',
+            data: data.temperature_trendline,
+            borderColor: '#2563eb',
+            borderDash: [6, 4],
+            pointRadius: 0,
+            fill: false,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: true, position: 'top', labels: { boxWidth: 12, font: { size: 11 } } } },
+        scales: {
+          y: { grid: { color: '#eef4ef' }, title: { display: true, text: '°C', font: { size: 11 } } },
+          x: { grid: { display: false }, ticks: { maxTicksLimit: 8 } },
+        },
+      },
+    });
+  }
+}
+
+/* =========================================================================
    Crop Calendar Rendering
    ========================================================================= */
 let calCurrentDate = new Date();
@@ -204,18 +293,32 @@ function renderCalendar() {
     let cls = 'cal-day';
     if (otherMonth) cls += ' other-month';
 
+    let isBestDay = false;
+    let statusIcon = '';
+
     if (window_ && cellDate >= stripTime(window_.start) && cellDate <= stripTime(window_.end)) {
       if (bestDate && dateKey(cellDate) === dateKey(bestDate)) {
-        cls += ' recommended';
+        cls += ' recommended best-day';
+        isBestDay = true;
       } else {
         const dayOffset = Math.floor((cellDate - window_.start) / 86400000);
         cls += (dayOffset % 3 === 0) ? ' risk' : (dayOffset % 2 === 0 ? ' recommended' : ' acceptable');
       }
     }
 
+    if (isBestDay) {
+      statusIcon = '<i class="fa-solid fa-star cal-icon" title="Best sowing date"></i>';
+    } else if (cls.includes('recommended')) {
+      statusIcon = '<i class="fa-solid fa-seedling cal-icon" title="Recommended day"></i>';
+    } else if (cls.includes('acceptable')) {
+      statusIcon = '<i class="fa-solid fa-circle-check cal-icon" title="Acceptable day"></i>';
+    } else if (cls.includes('risk')) {
+      statusIcon = '<i class="fa-solid fa-triangle-exclamation cal-icon" title="High risk day"></i>';
+    }
+
     if (dateKey(cellDate) === dateKey(today)) cls += ' today';
 
-    html += `<div class="${cls}">${cellDate.getDate()}</div>`;
+    html += `<div class="${cls}"><span class="cal-daynum">${cellDate.getDate()}</span>${statusIcon}</div>`;
   }
 
   daysWrap.innerHTML = html;
@@ -223,4 +326,94 @@ function renderCalendar() {
 
 function stripTime(d) {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+/* =========================================================================
+   Crop Info Modal — dashboard crop chips open this without leaving the page.
+   Modal shell lives in base.html; this wires up any [data-crop] trigger on
+   the page against the given district.
+   ========================================================================= */
+function initCropInfoTriggers(district) {
+  const overlay = document.getElementById('cropInfoOverlay');
+  const closeBtn = document.getElementById('cropInfoClose');
+  const body = document.getElementById('cropInfoBody');
+  if (!overlay || !body) return;
+  const i18n = window.cropInfoI18n || {};
+
+  function openModal() {
+    overlay.hidden = false;
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal() {
+    overlay.hidden = true;
+    document.body.style.overflow = '';
+  }
+  closeBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', function (e) { if (e.target === overlay) closeModal(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !overlay.hidden) closeModal(); });
+
+  function renderCropInfo(data) {
+    const seasonsHtml = data.seasons_display.map(function (s) {
+      return '<div class="crop-modal-season-row">' +
+        '<span class="season-name"><i class="fa-solid fa-seedling"></i> ' + s.label + '</span>' +
+        (s.sowing_window ? '<span class="season-window">' + s.sowing_window + '</span>' : '') +
+        '</div>';
+    }).join('');
+
+    const yieldBadgeClass = { Low: 'badge-low', Medium: 'badge-moderate', High: 'badge-high' }[data.yield_category] || 'badge-moderate';
+    const yieldLabel = (i18n.yieldLabels && i18n.yieldLabels[data.yield_category]) || data.yield_category;
+
+    body.innerHTML =
+      '<div class="crop-modal-title" id="cropInfoTitle">' + data.crop_label + '</div>' +
+      '<div class="crop-modal-sub">' + data.district_label + '</div>' +
+      '<div class="crop-modal-section">' +
+        '<div class="crop-modal-label">' + i18n.bestSeasons + '</div>' +
+        '<div class="crop-modal-seasons">' + seasonsHtml + '</div>' +
+      '</div>' +
+      '<div class="crop-modal-section">' +
+        '<div class="crop-modal-label">' + i18n.avgYield + '</div>' +
+        '<div class="crop-modal-yield-row">' +
+          '<span class="crop-modal-yield-num">' + data.avg_yield + ' ' + i18n.tonnesPerHectare + '</span>' +
+          '<span class="badge ' + yieldBadgeClass + '">' + yieldLabel + ' ' + i18n.yieldLevel + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="crop-modal-section">' +
+        '<div class="crop-modal-label">' + i18n.typicalClimate + '</div>' +
+        '<div class="crop-modal-stats">' +
+          '<div class="crop-modal-stat"><div class="stat-num">' + data.avg_rainfall + ' mm</div><div class="stat-cap">' + i18n.rainfall + '</div></div>' +
+          '<div class="crop-modal-stat"><div class="stat-num">' + data.avg_temperature + '°C</div><div class="stat-cap">' + i18n.temperature + '</div></div>' +
+          '<div class="crop-modal-stat"><div class="stat-num">' + data.avg_humidity + '%</div><div class="stat-cap">' + i18n.humidity + '</div></div>' +
+          '<div class="crop-modal-stat"><div class="stat-num">' + Math.round(data.total_area).toLocaleString() + '</div><div class="stat-cap">' + i18n.hectares + '</div></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="crop-modal-note"><i class="fa-solid fa-circle-info"></i> ' + i18n.yearsLabel + ': ' + data.years_recorded + '</div>' +
+      '<a class="btn btn-primary btn-block" style="margin-top:16px;" href="/recommendation?crop=' + encodeURIComponent(data.crop) + '">' +
+        i18n.getRec +
+      '</a>';
+  }
+
+  document.querySelectorAll('[data-crop]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const crop = btn.getAttribute('data-crop');
+      body.innerHTML = '<div class="modal-loading">' + i18n.loading + '</div>';
+      openModal();
+
+      fetch('/api/crop-info/' + encodeURIComponent(district) + '/' + encodeURIComponent(crop))
+        .then(function (res) {
+          if (res.status === 404) return { notFound: true };
+          if (!res.ok) throw new Error('crop info request failed');
+          return res.json();
+        })
+        .then(function (data) {
+          if (data.notFound) {
+            body.innerHTML = '<div class="modal-error">' + i18n.noData + '</div>';
+          } else {
+            renderCropInfo(data);
+          }
+        })
+        .catch(function () {
+          body.innerHTML = '<div class="modal-error">' + i18n.error + '</div>';
+        });
+    });
+  });
 }

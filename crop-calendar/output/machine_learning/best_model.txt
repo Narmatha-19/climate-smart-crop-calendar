@@ -2,17 +2,19 @@
 BEST MACHINE LEARNING MODEL
 ============================================================
 
-Model              : Random Forest
-Training R²        : 0.9661
-Testing R²         : 0.8913
-Overfitting Gap    : 0.0748
-MAE                : 157.05
-RMSE               : 698.41
+Model              : XGBoost
+Training R²        : 0.9960
+Testing R²         : 0.9698
+R² Percentage      : 96.98%
+Overfitting Gap    : 0.0262
+MAE                : 1.45
+RMSE               : 3.82
 
 Reason for Selection
 ------------------------------
-✔ Highest Testing R2
-✔ Lowest Overfitting Gap
-✔ Lowest Prediction Error
-✔ Best Generalization Performance
+✔ Highest Testing R²
+✔ Highest R² Percentage
+~ Random Forest has a lower overfitting gap (0.0181 vs 0.0262), but XGBoost leads on Testing R², MAE and RMSE
+✔ Lowest RMSE
+✔ Strong Overall Prediction Performance
 ✔ Selected for Final Deployment

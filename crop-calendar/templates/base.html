@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{% block title %}Climate-Smart Crop Calendar{% endblock %}</title>
+<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+<meta name="theme-color" content="#1b5e20">
+<link rel="icon" href="{{ url_for('static', filename='icons/icon-192.png') }}">
+<link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Crop Calendar">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -27,6 +35,9 @@
       </a>
       <a href="{{ url_for('recommendation') }}" class="nav-item {{ 'active' if active_page == 'recommendation' }}">
         <i class="fa-solid fa-seedling"></i> {{ t('nav_recommendation') }}
+      </a>
+      <a href="{{ url_for('monsoon') }}" class="nav-item {{ 'active' if active_page == 'monsoon' }}">
+        <i class="fa-solid fa-cloud-bolt"></i> {{ t('nav_monsoon') }}
       </a>
       <a href="{{ url_for('weather') }}" class="nav-item {{ 'active' if active_page == 'weather' }}">
         <i class="fa-solid fa-cloud-sun-rain"></i> {{ t('nav_weather') }}
@@ -92,7 +103,53 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="cropInfoOverlay" hidden>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="cropInfoTitle">
+    <button class="modal-close" id="cropInfoClose" aria-label="{{ t('close') }}"><i class="fa-solid fa-xmark"></i></button>
+    <div id="cropInfoBody">
+      <div class="modal-loading">{{ t('crop_info_loading') }}</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.cropInfoI18n = {
+    loading: {{ t('crop_info_loading') | tojson }},
+    error: {{ t('crop_info_error') | tojson }},
+    noData: {{ t('no_crop_data') | tojson }},
+    bestSeasons: {{ t('best_seasons') | tojson }},
+    typicalClimate: {{ t('typical_climate') | tojson }},
+    rainfall: {{ t('expected_rainfall') | tojson }},
+    temperature: {{ t('avg_temperature') | tojson }},
+    humidity: {{ t('humidity') | tojson }},
+    hectares: {{ t('hectares') | tojson }},
+    totalAreaLabel: {{ t('total_area_cultivated') | tojson }},
+    yearsLabel: {{ t('years_of_data') | tojson }},
+    getRec: {{ t('get_recommendation_for_crop') | tojson }},
+    avgYield: {{ t('avg_yield') | tojson }},
+    tonnesPerHectare: {{ t('tonnes_per_hectare') | tojson }},
+    yieldLevel: {{ t('yield_level') | tojson }},
+    yieldLabels: {
+      Low: {{ t('yield_low') | tojson }},
+      Medium: {{ t('yield_medium') | tojson }},
+      High: {{ t('yield_high') | tojson }},
+    },
+  };
+</script>
 <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register("{{ url_for('static', filename='js/sw.js') }}").catch(function () {
+        // Service workers need a secure context (HTTPS, or localhost on
+        // the same device). Registration is expected to fail silently
+        // when the app is opened over a plain http:// LAN address from a
+        // phone - the app still works, just without offline caching /
+        // the "Install" banner. See PGADMIN_SETUP.md's PWA section.
+      });
+    });
+  }
+</script>
 {% block extra_scripts %}{% endblock %}
 </body>
 </html>

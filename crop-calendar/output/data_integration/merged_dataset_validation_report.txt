@@ -1,11 +1,11 @@
 MERGED DATASET VALIDATION REPORT
 ==================================================
 
-Total Records : 4510
+Total Records : 11681
 Total Columns : 19
-Districts     : 33
+Districts     : 35
 Years         : 2005 - 2019
-Crops         : 8
+Crops         : 25
 Seasons       : 6
 
 Missing Values
@@ -30,7 +30,7 @@ RainyDays         0
 TemperatureStd    0
 RainfallStd       0
 
-Duplicate Rows : 0
+Duplicate Rows : 196
 
 Data Types
 --------------------------------------------------

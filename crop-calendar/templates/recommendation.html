@@ -19,18 +19,26 @@
     <div class="form-group" style="margin-bottom:0;">
       <label for="crop">{{ t('select_crop') }}</label>
       <select class="form-control" id="crop">
-        {% for c in crops %}
-        <option value="{{ c }}" {{ 'selected' if c == farmer['preferred_crop'] }}>{{ tr_crop(c) }}</option>
-        {% endfor %}
+        <optgroup label="{{ t('grown_in_district').format(district=tr_district(farmer['district'])) }}" id="cropGroupGrown">
+          {% for c in grown_crops %}
+          <option value="{{ c }}" {{ 'selected' if c == farmer['preferred_crop'] }}>{{ tr_crop(c) }}</option>
+          {% endfor %}
+        </optgroup>
+        {% if other_crops %}
+        <optgroup label="{{ t('other_crops') }}" id="cropGroupOther">
+          {% for c in other_crops %}
+          <option value="{{ c }}" {{ 'selected' if c == farmer['preferred_crop'] }}>{{ tr_crop(c) }}</option>
+          {% endfor %}
+        </optgroup>
+        {% endif %}
       </select>
     </div>
     <div class="form-group" style="margin-bottom:0;">
       <label for="season">{{ t('select_season') }}</label>
       <select class="form-control" id="season">
+        {% set season_hint = {'Kharif': '(Jun - Sep)', 'Rabi': '(Oct - Jan)', 'Summer': '(Feb - May)', 'Autumn': '(Sep - Nov)', 'Winter': '(Nov - Feb)', 'Whole Year': ''} %}
         {% for s in seasons %}
-        <option value="{{ s }}">{{ tr_season(s) }}
-          {%- if s == 'Kuruvai' %} (Jun - Sep){% elif s == 'Samba' %} (Aug - Jan){% else %} (Jan - Apr){% endif -%}
-        </option>
+        <option value="{{ s }}">{{ tr_season(s) }} {{ season_hint.get(s, '') }}</option>
         {% endfor %}
       </select>
     </div>
@@ -66,6 +74,59 @@
 <script>
   const analyzingLabel = {{ t('analyzing') | tojson }};
   const defaultAnalyzeLabel = {{ t('analyze_btn') | tojson }};
+  const grownLabelTemplate = {{ t('grown_in_district') | tojson }};
+  const otherLabel = {{ t('other_crops') | tojson }};
+  const cropLabels = {{ crop_labels | tojson }};
+
+  function districtLabelFor(code) {
+    const opt = document.querySelector('#district option[value="' + CSS.escape(code) + '"]');
+    return opt ? opt.textContent : code;
+  }
+
+  function rebuildCropOptions(grown, other, keepValue) {
+    const select = document.getElementById('crop');
+    const districtLabel = districtLabelFor(document.getElementById('district').value);
+    select.innerHTML = '';
+
+    const grownGroup = document.createElement('optgroup');
+    grownGroup.label = grownLabelTemplate.replace('{district}', districtLabel);
+    grown.forEach(function (c) {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = cropLabels[c] || c;
+      grownGroup.appendChild(opt);
+    });
+    select.appendChild(grownGroup);
+
+    if (other.length) {
+      const otherGroup = document.createElement('optgroup');
+      otherGroup.label = otherLabel;
+      other.forEach(function (c) {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = cropLabels[c] || c;
+        otherGroup.appendChild(opt);
+      });
+      select.appendChild(otherGroup);
+    }
+
+    if (keepValue && (grown.includes(keepValue) || other.includes(keepValue))) {
+      select.value = keepValue;
+    }
+  }
+
+  const presetCrop = new URLSearchParams(window.location.search).get('crop');
+  if (presetCrop && document.querySelector('#crop option[value="' + CSS.escape(presetCrop) + '"]')) {
+    document.getElementById('crop').value = presetCrop;
+  }
+
+  document.getElementById('district').addEventListener('change', function () {
+    const currentCrop = document.getElementById('crop').value;
+    fetch('/api/district-crops/' + encodeURIComponent(this.value))
+      .then(function (res) { return res.json(); })
+      .then(function (data) { rebuildCropOptions(data.grown, data.other, currentCrop); })
+      .catch(function () { /* keep the current crop list on failure */ });
+  });
 
   document.getElementById('analyzeBtn').addEventListener('click', function () {
     const district = document.getElementById('district').value;

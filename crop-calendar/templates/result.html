@@ -8,6 +8,12 @@
 
 {% set risk_key = {'Low': 'risk_low', 'Moderate': 'risk_moderate', 'High': 'risk_high'} %}
 
+{% if window_year %}
+<div class="flash-msg flash-warning" style="margin-bottom:16px;">
+  <i class="fa-solid fa-circle-info"></i> {{ t('window_passed_note').format(year=window_year) }}
+</div>
+{% endif %}
+
 <div class="result-hero">
   <div class="card">
     <div class="result-hero-label"><i class="fa-solid fa-seedling"></i> {{ t('recommended_crop') }}</div>
@@ -15,7 +21,7 @@
   </div>
   <div class="card">
     <div class="result-hero-label"><i class="fa-solid fa-sun-plant-wilt"></i> {{ t('season') }}</div>
-    <div class="result-hero-value">{{ tr_season(rec['season']) }}</div>
+    <div class="result-hero-value">{{ tr_season(rec['season'], rec['crop']) }}</div>
     <div class="result-hero-sub">{{ tr_district(rec['district']) }}</div>
   </div>
   <div class="card">
