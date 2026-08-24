@@ -739,12 +739,33 @@ input, select, textarea { font-family: inherit; }
   .topbar { padding: 14px 16px; gap: 10px; }
   .grid-4, .grid-3, .rec-form-grid, .about-rec-grid, .result-hero, .forecast-summary { grid-template-columns: 1fr 1fr; }
   .profile-info-grid { grid-template-columns: 1fr; }
-  .splash-title { font-size: 2.2rem; }
-  .splash-content { padding: 28px; }
+
+  /* Splash nav was position:absolute over vertically-centered content -
+     on a phone-height viewport the two could genuinely overlap, and the
+     brand block + language pill inside the nav had the same "two rigid
+     groups fighting for one row" problem the topbar had. Take the nav out
+     of the overlay entirely so there's no possible overlap. */
+  .splash { flex-direction: column; align-items: stretch; justify-content: flex-start; }
+  .splash-nav { position: static; padding: 16px 20px; }
+  .splash-content { padding: 24px 24px 40px; max-width: 100%; }
+  .splash-title { font-size: 2.1rem; }
+  .splash-tagline { font-size: 1rem; margin-bottom: 26px; }
+  .splash-actions { flex-direction: column; }
+  .splash-actions .btn { width: 100%; padding: 14px 20px; }
+
+  /* Same overlap risk on the login/register/forgot-password lang toggle -
+     it's absolutely positioned over a vertically-centered form, and the
+     register form (10 fields) is tall enough to reach it on short
+     viewports. Move it in-flow above the form instead. */
+  .auth-lang-toggle { position: static; display: flex; justify-content: flex-end; margin: 16px 16px 0; }
+  .auth-panel { padding-top: 12px; }
 }
 
 @media (max-width: 560px) {
   .grid-4, .grid-3, .rec-form-grid, .about-rec-grid, .result-hero, .forecast-summary, .form-row { grid-template-columns: 1fr; }
+  .result-actions { flex-direction: column; }
+  .result-actions .btn { width: 100%; }
+  .crop-modal-stats { grid-template-columns: 1fr; }
   .cal-grid { gap: 5px; }
   .cal-day { font-size: 0.7rem; padding: 5px; }
 
