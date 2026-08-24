@@ -268,6 +268,12 @@ input, select, textarea { font-family: inherit; }
 }
 
 .splash-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+.splash-download-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: 20px; font-size: 0.88rem; font-weight: 600;
+  color: rgba(255,255,255,0.85);
+}
+.splash-download-link:hover { color: var(--white); }
 .splash-actions .btn { padding: 15px 30px; font-size: 1rem; }
 .splash-actions .btn-outline { background: rgba(255,255,255,0.08); color: var(--white); border-color: rgba(255,255,255,0.55); }
 .splash-actions .btn-outline:hover { background: rgba(255,255,255,0.18); }

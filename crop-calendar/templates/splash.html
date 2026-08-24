@@ -44,6 +44,9 @@
       <a href="{{ url_for('login') }}" class="btn btn-primary"><i class="fa-solid fa-right-to-bracket"></i> {{ t('btn_login') }}</a>
       <a href="{{ url_for('register') }}" class="btn btn-outline"><i class="fa-solid fa-user-plus"></i> {{ t('btn_register') }}</a>
     </div>
+    <a href="{{ url_for('static', filename='downloads/climate-smart-crop-calendar.apk') }}" class="splash-download-link">
+      <i class="fa-solid fa-download"></i> {{ t('download_app_link') }}
+    </a>
   </div>
 </div>
 </body>

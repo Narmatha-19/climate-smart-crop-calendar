@@ -55,6 +55,7 @@ TRANSLATIONS = {
         "splash_tagline": "Get the best sowing window for your crop, powered by monsoon shift detection, rainfall analysis, and machine-learning risk scoring — tuned for your district.",
         "btn_login": "Login",
         "btn_register": "Register",
+        "download_app_link": "Download the Android app",
 
         # ---- Login ----
         "login_heading": "Welcome back to<br>smarter farming decisions.",
@@ -299,6 +300,7 @@ TRANSLATIONS = {
         "splash_tagline": "பருவமழை மாற்றம் கண்டறிதல், மழைப்பொழிவு பகுப்பாய்வு மற்றும் இயந்திர கற்றல் அபாய மதிப்பீட்டின் மூலம், உங்கள் மாவட்டத்திற்கு ஏற்ற சிறந்த விதைப்பு காலத்தைப் பெறுங்கள்.",
         "btn_login": "உள்நுழைய",
         "btn_register": "பதிவு செய்ய",
+        "download_app_link": "ஆண்ட்ராய்டு ஆப்பைப் பதிவிறக்கவும்",
 
         "login_heading": "மீண்டும் வரவேற்கிறோம்<br>சிறந்த விவசாய முடிவுகளுக்கு.",
         "login_hero_text": "உங்கள் தனிப்பயன் காலநிலை எச்சரிக்கைகள், பயிர் பரிந்துரைகள் மற்றும் விதைப்பு நாட்காட்டியைப் பார்க்க உள்நுழையவும்.",
