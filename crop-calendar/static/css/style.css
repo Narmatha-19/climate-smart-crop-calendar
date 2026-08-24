@@ -426,9 +426,18 @@ input, select, textarea { font-family: inherit; }
   top: 0;
   z-index: 5;
 }
-.topbar-title { font-size: 1.3rem; font-weight: 700; }
-.topbar-sub { font-size: 0.85rem; color: var(--ink-500); margin-top: 2px; }
-.topbar-right { display: flex; align-items: center; gap: 18px; }
+.topbar-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.topbar-titles { min-width: 0; }
+.topbar-title {
+  font-size: 1.3rem; font-weight: 700;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.topbar-sub {
+  font-size: 0.85rem; color: var(--ink-500); margin-top: 2px;
+  display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.topbar-right { display: flex; align-items: center; gap: 18px; flex-shrink: 0; }
 
 .lang-toggle {
   display: flex;
@@ -727,7 +736,7 @@ input, select, textarea { font-family: inherit; }
   .sidebar { position: fixed; left: -260px; z-index: 50; transition: left 0.2s ease; box-shadow: var(--shadow-lg); }
   .sidebar.open { left: 0; }
   .page-content { padding: 20px 16px 50px; }
-  .topbar { padding: 16px; }
+  .topbar { padding: 14px 16px; gap: 10px; }
   .grid-4, .grid-3, .rec-form-grid, .about-rec-grid, .result-hero, .forecast-summary { grid-template-columns: 1fr 1fr; }
   .profile-info-grid { grid-template-columns: 1fr; }
   .splash-title { font-size: 2.2rem; }
@@ -738,6 +747,24 @@ input, select, textarea { font-family: inherit; }
   .grid-4, .grid-3, .rec-form-grid, .about-rec-grid, .result-hero, .forecast-summary, .form-row { grid-template-columns: 1fr; }
   .cal-grid { gap: 5px; }
   .cal-day { font-size: 0.7rem; padding: 5px; }
+
+  /* The topbar's title block and its right-side controls (language
+     toggle, bell, avatar) were both fighting for space on phone widths -
+     the controls held their size and squeezed the title into wrapping
+     3+ lines. Shrink the controls and let the title ellipsis instead. */
+  .topbar-left { gap: 8px; }
+  .menu-toggle { width: 34px; height: 34px; font-size: 0.85rem; }
+  .topbar-title { font-size: 1rem; }
+  .topbar-sub { font-size: 0.72rem; -webkit-line-clamp: 1; line-clamp: 1; }
+  .topbar-right { gap: 6px; }
+  .lang-toggle { padding: 2px; }
+  .lang-btn { padding: 5px 8px; font-size: 0.68rem; }
+  .icon-btn, .avatar-circle { width: 32px; height: 32px; font-size: 0.8rem; }
+  .icon-dot { top: 6px; right: 7px; width: 7px; height: 7px; }
+
+  .panel { padding: 18px; }
+  .stat-card { padding: 16px; }
+  .page-content { padding: 16px 12px 50px; }
 }
 
 .menu-toggle {
