@@ -1,0 +1,8 @@
+{
+  "appId": "com.climatesmart.cropcalendar",
+  "appName": "Climate-Smart Crop Calendar",
+  "webDir": "www",
+  "server": {
+    "url": "https://crop-calendar.onrender.com"
+  }
+}

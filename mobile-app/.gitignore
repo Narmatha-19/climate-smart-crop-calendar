@@ -1,0 +1,14 @@
+# Node dependencies - reinstall with `npm install`
+node_modules/
+
+# Android/Gradle build output and caches - regenerate with
+# `npx cap sync android` then `./gradlew assembleDebug`
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+
+# Capacitor copies www/ and the root capacitor.config.json in here on every
+# `npx cap sync` - not source, don't track the copies.
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json

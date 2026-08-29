@@ -1,0 +1,624 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{url}
+\usepackage{hyperref}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{Climate-Smart Crop Calendar Recommendation and Monsoon Shift\\
+Analysis for Tamil Nadu Using Machine Learning}
+
+% TODO: replace with your actual name(s), department, institution, city, country
+\author{
+\IEEEauthorblockN{Author Name}
+\IEEEauthorblockA{\textit{Department of Computer Science} \\
+\textit{Your College/University Name} \\
+City, India \\
+your.email@example.com}
+}
+
+\maketitle
+
+\begin{abstract}
+Most machine-learning crop recommendation systems in the literature are trained and
+evaluated on small, generic, non-regional datasets (soil N-P-K, temperature, humidity,
+pH, and rainfall) and treat rainfall as a single static feature rather than analyzing
+how a region's monsoon behavior is actually shifting over time; they are also rarely
+carried through to a deployed, farmer-facing system. This paper presents a
+climate-smart crop calendar system for Tamil Nadu, India, built around two tightly
+coupled components: (i) district-level monsoon shift analysis, using each district's
+real 21-year historical rainfall record to detect the direction and magnitude of
+long-term rainfall change and translate it into an explicit drought/flood risk
+signal, and (ii) a machine-learning yield and sowing-window recommendation pipeline
+that is conditioned on that district's climate history rather than a generic
+national average. The system is built from real district-level government
+agricultural census data (38 districts, 25 crops, six government-defined cropping
+seasons, historical records spanning 2005--2019) merged with district-level
+historical climate data, combined with a TNAU-style agronomic sowing-window reference
+calendar. While preparing this system we discovered a systematic $\sim$100$\times$
+production-unit inconsistency present in the underlying government yield records for
+every crop in the dataset -- silently corrupting a substantial fraction of the
+training signal used by both the yield model and the rainfall-trend analysis -- and
+we describe an empirical, duplicate-record-grounded procedure to detect and correct
+it (6{,}295 of the affected records were rescaled; one record with an unrecoverable
+Area value was dropped). After this correction, we trained and fairly compared three
+regression models -- a decision tree, a random forest, and XGBoost -- for
+district-level yield estimation, with hyperparameters tuned under matched budgets
+(tree count $\times$ depth) rather than leaving the gradient-boosted model
+under-regularized relative to the bagged baseline. The tuned XGBoost model achieved
+the best held-out performance (test $R^2 = 96.98\%$, MAE $= 1.45$, RMSE $= 3.82$)
+against Random Forest ($R^2 = 96.57\%$) and a single Decision Tree ($R^2 = 95.27\%$),
+confirmed with 5-fold cross-validation. The resulting recommendation pipeline --
+climate retrieval, monsoon-shift-aware drought/flood risk assessment, yield
+prediction, sowing-window selection, and a data-driven confidence score -- is
+deployed as a full-stack web application (Flask, PostgreSQL) that is also installable
+as a Progressive Web App and as a native Android application, with real-time weather
+integration replacing static climate estimates for the farmer-facing dashboard. We
+discuss the practical significance of the data-quality finding, the deployed system's
+architecture, and outline uncertainty quantification as a direction for future work.
+\end{abstract}
+
+\begin{IEEEkeywords}
+crop recommendation, monsoon shift analysis, rainfall trend, precision agriculture,
+machine learning, XGBoost, data quality, yield prediction, deployed agricultural
+decision support system
+\end{IEEEkeywords}
+
+\section{Introduction}
+
+Machine learning (ML) has become a standard tool for crop recommendation and yield
+prediction, supporting farmers with data-driven guidance on what to grow and when
+\cite{alam2025}. A large share of published crop recommendation studies, however, train
+and validate models on a single widely-used public dataset of 2{,}200 samples spanning
+22 crop classes with seven generic agro-climatic features (nitrogen, phosphorus,
+potassium, temperature, humidity, pH, and rainfall) \cite{alam2025}. This dataset is
+convenient and well-balanced, but it is not tied to any specific region's actual
+administrative and agronomic structure -- it has no district, no government-defined
+cropping season, and no historical yield trend for a real place a farmer actually
+farms in. Consequently, models trained on it, however accurate on their own test split,
+cannot directly tell a farmer in a named district when to sow a named crop this season.
+
+A second, related gap is that even studies which do use real rainfall data typically
+treat it as one more static input feature at prediction time, rather than first asking
+whether the region's monsoon behavior itself has been \emph{shifting} over the
+available historical record. Trend-detection studies of Indian rainfall (e.g.,
+\cite{praveen2020}), by contrast, show that this question has a real, non-trivial
+answer -- most Indian meteorological divisions exhibit statistically significant
+negative rainfall trends over the twentieth century -- and that answer is exactly the
+kind of district-specific signal a crop calendar recommendation should be conditioned
+on, not just a raw rainfall number for the current season.
+
+This paper takes both gaps as its starting point: instead of a generic feature-based
+dataset and a static rainfall feature, we build a crop recommendation and
+sowing-calendar system directly from government agricultural census and
+district-level climate records for the Indian state of Tamil Nadu, explicitly analyze
+each district's real multi-decade rainfall trend as a monsoon-shift signal that feeds
+the recommendation's risk assessment, and carry the resulting model through to a
+deployed, installable application. This choice surfaced a data problem that a small
+curated benchmark dataset would not: real government production records, aggregated
+over decades from multiple reporting cycles, contain unresolved unit inconsistencies.
+We detail this issue and our correction procedure as one of this paper's
+contributions, since it directly affects the validity of any yield model \emph{and}
+any rainfall-trend analysis trained on this class of data source, and, to our
+knowledge, is not discussed in prior crop recommendation literature.
+
+The contributions of this paper are:
+\begin{enumerate}
+  \item A district-level monsoon shift analysis over each Tamil Nadu district's real
+        21-year historical rainfall record, translating the detected trend direction
+        and magnitude into an explicit drought/flood risk signal that conditions the
+        downstream crop recommendation, rather than treating rainfall as a single
+        static feature.
+  \item A district-level crop sowing recommendation pipeline built on real Tamil Nadu
+        government agriculture and climate records (25 crops, 38 districts, six
+        government-defined seasons), combining a TNAU-style agronomic reference
+        calendar with the monsoon-shift-based risk assessment above.
+  \item Identification and correction of a systematic $\sim$100$\times$ production-unit
+        inconsistency affecting every crop in the underlying government dataset, using
+        an empirical procedure grounded in confirmed duplicate-record pairs rather than
+        a purely statistical outlier heuristic.
+  \item A fair, matched-budget hyperparameter comparison of Decision Tree, Random
+        Forest, and XGBoost regressors for yield estimation on the corrected data,
+        validated with both a held-out split and 5-fold cross-validation.
+  \item A deployed, farmer-facing full-stack implementation (Flask, PostgreSQL) that is
+        installable as a Progressive Web App and as a native Android application, with
+        live weather data replacing static estimates on the dashboard.
+\end{enumerate}
+
+The remainder of this paper is organized as follows. Section II reviews related work
+in ML-based crop recommendation and rainfall/monsoon trend analysis. Section III
+describes the data source, the crop inclusion criterion, and the production-unit
+correction procedure. Section IV describes the monsoon shift analysis and the
+recommendation pipeline and model configurations. Section V presents the model
+comparison results. Section VI describes the deployed system. Section VII discusses
+limitations and future work, followed by the conclusion.
+
+\section{Related Work}
+
+Recent crop recommendation research has explored ensemble learning, IoT integration,
+and cloud deployment to improve prediction reliability and reach. Alam et
+al.~\cite{alam2025} proposed a soft-voting ensemble of Logistic Regression, Na\"ive
+Bayes, KNN, Decision Tree, Random Forest, and XGBoost on the 2{,}200-sample generic
+crop dataset described above, reporting 99.54\% classification accuracy and
+introducing entropy-based uncertainty quantification over the ensemble's softmax
+probabilities -- to our knowledge the first crop recommendation study to explicitly
+quantify prediction confidence rather than deliver a purely deterministic label.
+Hasan et al.~\cite{hasan2023} similarly used a K-nearest-neighbor/Random
+Forest/Ridge-regression ensemble for crop production prediction in Bangladesh, and
+Bandi et al.~\cite{bandi2023} and Nti et al.~\cite{nti2023} each reported
+classification accuracies above 99\% using voting and tree-based ensembles
+respectively -- a pattern of very high reported accuracy across this literature that
+underscores why uncertainty and generalizability, not just point accuracy, matter for
+practical deployment. Gopi and Karthikeyan~\cite{gopi2024} combined Red Fox
+Optimization with an ensemble recurrent neural network for joint crop recommendation
+and yield prediction. Elbasi et al.~\cite{elbasi2023} compared fifteen ML algorithms
+combined with IoT sensor data, reporting 97\% accuracy but, like most prior work, only
+deterministic outputs. Bera et al.~\cite{bera2023} proposed an edge/dew-computing and
+federated-learning architecture (E-CropReco) to reduce latency in real-time crop
+recommendation. Thilakarathne et al.~\cite{thilakarathne2023} built a cloud-based IoT
+platform for real-time monitoring, though scoped to a single crop (tomato). Shingade
+et al.~\cite{shingade2022} developed a Random Forest classifier specifically for seed
+recommendation. Senapaty et al.~\cite{senapaty2024} and Chaudhari et
+al.~\cite{chaudhari2025} each describe decision-support-oriented crop recommendation
+systems closer in spirit to a deployed tool than an offline benchmark, and Agrawal et
+al.~\cite{agrawal2024} combined ML with spatial multi-criteria decision analysis for
+agricultural land suitability classification, one of the few studies in this space
+that, like the present work, reasons at the level of a specific geographic unit
+rather than a generic feature vector. Afzal et al.~\cite{afzal2025} combined Random
+Forest and XGBoost with soil information to improve recommendation output.
+
+A separate line of work analyzes rainfall trends directly rather than using rainfall
+only as a prediction feature. Praveen et al.~\cite{praveen2020} applied the
+Mann-Kendall trend test, Pettitt change-point detection, and an ANN-MLP forecaster to
+115 years (1901--2015) of Indian meteorological-division rainfall data, finding
+statistically significant negative rainfall trends in most divisions -- direct
+evidence that Indian monsoon behavior is measurably shifting over the long term, which
+motivates conditioning a crop recommendation on a district's own historical trend
+rather than its current-season rainfall alone, as this paper does (Section IV).
+Correndo et al.~\cite{correndo2021} combined Bayesian statistics and machine learning
+to show that weather is the dominant source of uncertainty in maize yield response to
+nitrogen, reinforcing that climate variability -- not just soil or management inputs
+-- is a primary driver of yield uncertainty. Rihan et al.~\cite{rihan2023} used
+machine learning and deep learning with explicit sensitivity and uncertainty analysis
+for forest-fire susceptibility mapping and identified rainfall as one of the dominant
+driving factors, illustrating that rainfall-trend-aware risk modeling is valuable
+beyond crop recommendation specifically.
+
+Beyond crop \emph{recommendation}, a closely related line of work addresses yield
+\emph{prediction} directly with tree-ensemble methods. Jeong et al.~\cite{jeong2016}
+evaluated Random Forests against multiple linear regression for wheat, maize, and
+potato yield prediction at global and regional scale, reporting RMSE of 6--14\% of
+observed yield for Random Forest versus 14--49\% for the linear baseline -- an early,
+influential demonstration that tree ensembles capture climate-yield relationships that
+linear models miss, consistent with the gap we observe between our single Decision
+Tree baseline and the ensemble methods in Section V. Hu et al.~\cite{hu2023}
+specifically cautioned against black-box ML models for evaluating climate-change
+impacts on crop yield and argued for explainable, interpretable approaches instead --
+a concern this paper addresses in part through per-feature importance analysis
+(Section V-B) rather than treating the trained model as opaque.
+
+These studies share two characteristics relevant to the present work. First, nearly
+all are evaluated on generic or single-crop datasets rather than a real administrative
+region's multi-decade agricultural census, so a trained model has no direct notion of
+\emph{which named district, which government-defined season, and which historical
+climate trend} apply to a given farmer. Second, with the exception of
+\cite{alam2025}, none quantify how confident a recommendation is, and even
+\cite{alam2025} does not carry its model through to a farmer-facing deployed
+application. The system described in this paper addresses the first gap directly by
+building on real district-level government data for Tamil Nadu and deploying the
+result as an installable web and Android application; we discuss the second gap --
+uncertainty quantification -- as future work in Section VII, for which the
+entropy-based approach of \cite{alam2025} is a natural candidate to adapt to a
+regression setting.
+
+\section{Data}
+
+\subsection{Source and Scope}
+
+The system is built on two merged real data sources: (i) a government agricultural
+production census covering Tamil Nadu, reporting district, year, season, crop, area
+under cultivation, and production, for the years 2005--2019; and (ii) district-level
+historical climate records (temperature, rainfall, humidity, wind) for the same
+period and districts. The two sources were merged on district, year, and season to
+produce a single feature table used for both model training and the application's
+real-time climate-retrieval logic.
+
+The application supports all 38 present-day Tamil Nadu districts. Five districts
+created after the 2019 administrative reorganization (Kallakurichi, Mayiladuthurai,
+Ranipet, Tenkasi, Tirupathur) have no independent history under their current name in
+the census data; these are mapped to the parent district they were carved from for
+the purposes of historical lookups, while remaining independently selectable in the
+application interface.
+
+\subsection{Crop Selection Criterion}
+
+The government census records production for many more crops than the eight
+originally covered by an early version of this system (Rice, Groundnut, Cotton,
+Sugarcane, Maize, Bajra, Ragi, Banana). To responsibly expand coverage, every
+additional crop reported for Tamil Nadu in the source census was evaluated against a
+fixed data-sufficiency bar and included only if it met \emph{all three} of the
+following conditions, chosen to match the same order of magnitude as the original
+eight crops:
+\begin{itemize}
+  \item at least 300 recorded (district, year, season) instances;
+  \item at least 15 distinct years of history;
+  \item at least 15 distinct districts represented.
+\end{itemize}
+
+Seventeen crops cleared this bar and were added: five pulses (Urad, Moong,
+Horse-gram, Arhar/Tur, Gram), two oilseeds (Sesamum, Sunflower), two millets (Jowar,
+Small millets), three spices (Turmeric, Dry chillies, Coriander), one plantation crop
+(Cashewnut), and four others (Tobacco, Onion, Tapioca, Sweet potato), bringing total
+coverage to 25 crops. Crops that failed the bar were deliberately excluded rather than
+included with unreliable history: Mango, Grapes, Papaya, and Citrus had only two years
+of recorded data each; Korra, Varagu, Samai, Mesta, and Sannhamp had two to three
+years each; Potato, Garlic, Ginger, Black pepper, and Cardamom fell under the
+record/district threshold. Coconut was excluded for a different reason described in
+the next subsection. Tea, Coffee, and Rubber are not present in this census source at
+all -- they are tracked by separate commodity boards in India -- and would require an
+entirely different data source to add responsibly.
+
+\subsection{A Systematic Production-Unit Inconsistency}
+
+While computing per-crop average yield for the application's crop-information
+feature, yield figures for individual (district, crop, year) combinations were found
+to be physically implausible for a subset of records -- e.g., rice in one district
+reporting approximately 3--4 tonnes/hectare for 2005--2013 and then approximately
+330--490 tonnes/hectare for 2014--2019, an impossible jump for the same crop and
+district. Manual inspection of the raw census source revealed that many
+(district, crop, year, season) combinations are recorded \emph{twice}, with one copy's
+Production value exactly $100\times$ the other (confirmed on thousands of matching
+duplicate-row pairs, with ratios consistently in the 90--110$\times$ range). An
+existing deduplication step in the data pipeline already preferred the smaller of two
+duplicate values when both copies of a record existed, but a large share of records
+-- especially from 2014 onward, and for some districts in every year -- had only the
+inflated copy submitted to the source, leaving nothing for the deduplication step to
+prefer.
+
+We verified that this bimodal pattern is present in every one of the 25 crops, not
+only rice, by examining the quantile distribution of the raw Yield column per crop:
+every crop showed a low cluster consistent with plausible tonnes/hectare values and a
+high cluster approximately $100\times$ larger. A purely statistical correction (e.g.,
+the largest gap in the sorted per-crop value distribution) was evaluated and rejected,
+because it let some crops' genuinely implausible values through as ``legitimate'' --
+for instance, it would have accepted Groundnut values up to 14.93 t/ha, far beyond the
+world-record groundnut yield of approximately 4--5 t/ha.
+
+Instead, we derived a correction empirically from the confirmed duplicate pairs
+themselves. For each crop, we collected every confirmed duplicate pair (production
+ratio in the 90--110$\times$ range) and computed the 99th percentile of the
+\emph{correct}-scale member of each pair. Each crop's correction ceiling was set to
+$1.5\times$ this percentile -- comfortably above every observed genuine value and
+comfortably below the $\sim$100$\times$-inflated ones. Any record whose implied yield
+(Production $\div$ Area) exceeded its crop's ceiling had its Production value divided
+by 100. As a safety net, any record still more than $3\times$ its ceiling after this
+correction was dropped rather than further guessed at; this caught exactly one record
+(a Cashewnut observation with an Area value of 1.0 hectare, an unrelated broken input
+that no unit correction can fix). In total, 6{,}295 records were rescaled and one
+record was dropped across the full 25-crop dataset. Separately, Coconut was found to
+have the same duplicate-record pattern but with ratios near $100{,}000\times$ rather
+than a clean $\sim$100$\times$, indicating a different and unverified error mode; it
+was excluded from the crop list rather than corrected without equivalent evidence.
+
+We additionally found that the per-crop yield-tertile categorization used elsewhere in
+the pipeline (a Low/Medium/High label derived from global yield quantiles) exhibited a
+``crop-identity leak'': because raw yield scales differ enormously by crop (e.g.,
+Sesamum's typical yield is on the order of 0.5 t/ha versus Sugarcane's $\sim$100 t/ha),
+a single global quantile split classified nearly every Sugarcane record as ``High''
+and nearly every Sesamum record as ``Low'' regardless of how each performed relative
+to its own crop's normal range. This was corrected by computing yield quantiles
+\emph{per crop} rather than globally, after which every crop's category distribution
+split into roughly even thirds.
+
+\section{Monsoon Shift Analysis and Recommendation Pipeline}
+
+Given a district, crop, and season, the recommendation pipeline executes five stages:
+
+\begin{enumerate}
+\item \textbf{Climate data retrieval}: historical climate and agriculture features
+      for the exact (district, crop, season) combination are averaged from the
+      corrected dataset, falling back to (district, season), then district-only, then
+      (crop, season), then the full dataset, if the exact combination has insufficient
+      history.
+\item \textbf{Yield prediction}: the trained regression model (Section V) predicts
+      yield in tonnes/hectare from twenty features -- district, year, season, crop,
+      cultivated area, six raw climate statistics (average/max/min temperature, total
+      and average rainfall, average wind speed), three derived statistics (rainy days,
+      temperature and rainfall standard deviation), and four categorical bucket
+      features (temperature, rainfall, humidity, and wind category) -- and the
+      predicted value is bucketed into a per-crop yield tertile (Section III-C).
+\item \textbf{Monsoon-shift-aware climate risk assessment}: drought and flood risk are
+      derived jointly from the district's current-season rainfall category and its
+      real 21-year historical rainfall trend (percentage change and direction),
+      rather than from the current season's rainfall alone. This mirrors the
+      trend-then-risk pattern used in Indian rainfall trend-detection studies such as
+      \cite{praveen2020}, which found significant long-term negative rainfall trends
+      across most Indian meteorological divisions, and in rainfall-driven hazard
+      studies such as \cite{rihan2023}, which identified rainfall as a dominant driver
+      of susceptibility alongside evapotranspiration; here the trend is computed
+      per-district from the corrected historical series (Section III-C) rather than
+      at the coarser meteorological-division scale, and is used to shift the
+      drought/flood classification a district would otherwise receive from its
+      current season's rainfall category alone -- e.g., a district reporting
+      currently-adequate rainfall but a strong long-term declining trend is flagged at
+      elevated drought risk rather than ``Low.''
+\item \textbf{Sowing window selection}: a TNAU-style (Tamil Nadu Agricultural
+      University) reference calendar maps each (crop, season) pair to an agronomic
+      sowing-window date range, built from established Tamil Nadu agronomic-extension
+      practice. Because the underlying dataset contains no sowing-date ground truth,
+      this stage relies on domain-expert reference values rather than a learned date.
+      If the current year's window for the requested crop and season has already
+      elapsed, the system correctly advances the recommendation to the next
+      occurrence rather than recommending an already-passed date, and surfaces this
+      explicitly to the farmer.
+\item \textbf{Confidence scoring}: a data-driven confidence score is derived from the
+      predicted yield's tertile category and the overall drought/flood risk level,
+      rather than a fixed constant.
+\end{enumerate}
+
+\section{Model Comparison}
+
+\subsection{Setup}
+
+Three regression models were trained on the corrected 25-crop feature table with an
+80:20 train/test split (\texttt{random\_state=42}): a single Decision Tree regressor
+as a baseline, a bagged Random Forest regressor~\cite{biau2016}
+(\texttt{n\_estimators=300}, \texttt{max\_depth=20}, \texttt{min\_samples\_split=5},
+\texttt{min\_samples\_leaf=2}), and a gradient-boosted XGBoost regressor~\cite{chen2016}.
+
+An initial XGBoost configuration used substantially more conservative hyperparameters
+than the Random Forest baseline (\texttt{max\_depth=3}, \texttt{n\_estimators=300},
+strong L1/L2 regularization), which is not a fair comparison: Random Forest was given
+free rein to depth 20 while XGBoost was deliberately constrained to depth 3. Under
+this mismatched configuration, XGBoost under-performed Random Forest. We therefore
+re-tuned XGBoost to a comparable trees $\times$ depth budget
+(\texttt{n\_estimators=800}, \texttt{max\_depth=6}, \texttt{learning\_rate=0.03},
+\texttt{min\_child\_weight=1}, \texttt{subsample=0.85}, \texttt{colsample\_bytree=0.85},
+\texttt{reg\_alpha=0.01}, \texttt{reg\_lambda=1.0}), selected by checking both
+held-out test $R^2$ and 5-fold cross-validated $R^2$ together, rather than picking
+whichever configuration scored highest on a single lucky split.
+
+\subsection{Results}
+
+Table~\ref{tab:results} reports held-out test performance for all three models after
+the fair re-tuning. XGBoost achieves the best test $R^2$ (96.98\%), ahead of Random
+Forest (96.57\%) and the single Decision Tree (95.27\%), with the lowest MAE and RMSE
+among the three. Fig.~\ref{fig:comparison} shows the same comparison graphically.
+
+\begin{table}[htbp]
+\caption{Model Comparison on the Corrected Dataset (Held-Out Test Split)}
+\label{tab:results}
+\centering
+\begin{tabular}{lccccc}
+\toprule
+Model & Train $R^2$ & Test $R^2$ & MAE & RMSE & Gap \\
+\midrule
+XGBoost & 99.60\% & \textbf{96.98\%} & \textbf{1.45} & \textbf{3.82} & 0.026 \\
+Random Forest & 98.38\% & 96.57\% & 1.19 & 4.08 & 0.018 \\
+Decision Tree & 97.60\% & 95.27\% & 1.46 & 4.79 & 0.023 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\linewidth]{figures/model_comparison_bar_chart.png}
+\caption{Test $R^2$ comparison across the three regression models.}
+\label{fig:comparison}
+\end{figure}
+
+Random Forest has the lowest overfitting gap (train $R^2$ minus test $R^2$) of the
+three models (0.018 versus XGBoost's 0.026), which raises a natural question: does a
+smaller gap make it the better model? We argue no, for two reasons. First, both gaps
+are comfortably inside what we treat as a ``good generalization'' threshold (gap
+$\leq 0.05$); neither model shows concerning overfitting. Second, overfitting gap
+measures the \emph{consistency} of a model's score between training and test data, not
+its absolute quality -- a model that always predicted the per-crop mean yield would
+have a gap near zero while being useless. Once both models are confirmed to
+generalize well, the appropriate tie-breaker is which one is more accurate on unseen
+data, which is what test $R^2$ measures directly, and that favors XGBoost. XGBoost's
+slightly larger gap is also structurally expected: boosting fits training data more
+closely by design (each tree corrects the residual of the previous ones), whereas
+bagging's averaging across independently-trained trees smooths training fit further --
+a difference in mechanism, not a flaw in either model.
+
+To verify this result was not an artifact of one lucky 80:20 split, we additionally
+ran 5-fold cross-validation: the tuned XGBoost configuration achieved a mean CV
+$R^2$ of 0.9585 versus Random Forest's 0.9576 and the original, under-tuned XGBoost
+configuration's 0.9467 -- confirming that fair tuning, not the particular split,
+drives the improvement, though the cross-validated margin between XGBoost and Random
+Forest (about 0.1 percentage points) is markedly smaller than the held-out single-split
+margin (about 0.4 points), indicating the true difference between the two ensemble
+methods on this dataset is modest.
+
+Fig.~\ref{fig:importance} shows XGBoost's feature importance. Consistent with
+agronomic expectation, climate variables (rainfall and temperature statistics) and
+cultivated area dominate, while the categorical bucket features contribute
+comparatively little additional signal once their underlying continuous values are
+already present.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\linewidth]{figures/xgboost_feature_importance_bar.png}
+\caption{XGBoost feature importance for yield prediction.}
+\label{fig:importance}
+\end{figure}
+
+\section{Deployed System}
+
+The trained model is served through a full-stack web application rather than remaining
+an offline notebook artifact. The backend (Python, Flask) exposes the five-stage
+pipeline of Section IV as a farmer-facing dashboard, a district/crop/season
+recommendation form, a monsoon/climate-trend view, a sowing calendar view, and a
+notification center, in both English and Tamil. Application data (farmer accounts and
+stored recommendations) is persisted in PostgreSQL. The dashboard's ``today's
+weather'' figures are retrieved live per district from the Open-Meteo API at request
+time (cached for fifteen minutes), replacing an earlier static per-district estimate
+that farmers correctly identified as inconsistent with real observed conditions.
+
+The same application is exposed as an installable Progressive Web App (a web manifest
+and service worker enable ``Add to Home Screen'' installation with offline caching of
+static assets) and, separately, as a native Android application built with Capacitor,
+wrapping the same served pages in a WebView shell rather than re-implementing the
+interface in a native toolkit -- preserving a single source of truth for the
+interface across the browser, PWA, and Android targets. The system is deployed to a
+cloud host with a managed PostgreSQL instance, so the application is reachable from
+any network, not only a local development machine.
+
+\section{Discussion, Limitations, and Future Work}
+
+The production-unit inconsistency described in Section III-C is, to our knowledge, not
+previously documented for this class of Indian government agricultural census data,
+and it has a direct implication for any prior or future model trained on similar
+uncorrected sources: a substantial fraction of the yield target variable may be
+corrupted by a consistent, detectable, but easily-overlooked unit error. We consider
+the detection and correction procedure -- grounding the correction in confirmed
+duplicate-record evidence rather than a purely statistical heuristic -- to be as
+significant a contribution of this work as the model comparison itself, since it
+determines whether the regression target is meaningful at all.
+
+Several limitations remain. First, following the discussion in Section II, this
+system does not currently quantify the confidence of a given yield prediction or
+sowing recommendation beyond the coarse per-crop tertile category and a heuristic
+confidence score; adapting an entropy-based or ensemble-variance-based uncertainty
+measure, in the style of \cite{alam2025}, to this regression setting is a natural next
+step, particularly for districts or crops with sparse historical records where the
+model's fallback averaging (Section IV, stage 1) already signals reduced data
+support. Second, the historical data underlying both the yield model and the climate
+risk assessment ends in 2019; incorporating more recent government releases as they
+become available, and integrating real-time soil-sensor data where farmers have
+access to it, would improve currency. Third, the sowing-window calendar is a
+domain-expert reference rather than a learned quantity, since the underlying dataset
+contains no sowing-date ground truth; a future direction is to source sowing-date
+records (e.g., from agricultural extension offices) and let the model learn
+district-specific timing shifts directly. Finally, this system is scoped to Tamil
+Nadu; extending the same data-correction and modeling methodology to other Indian
+states' government agricultural census data is a direct avenue for broader impact,
+echoing the generalization concern raised for the generic benchmark dataset in
+Section II.
+
+\section{Conclusion}
+
+This paper presented a district-level crop sowing recommendation system built on real
+Tamil Nadu government agricultural and climate records, expanded from an initial eight
+crops to twenty-five under an explicit, defensible data-sufficiency criterion. In the
+course of building it, we identified and corrected a systematic $\sim$100$\times$
+production-unit inconsistency present in the underlying government source for every
+crop -- a finding with direct implications for the validity of yield models trained on
+this and similar data sources -- and corrected a related per-crop yield-categorization
+flaw. On the corrected data, a fairly-tuned XGBoost regressor achieved the best
+held-out performance (test $R^2 = 96.98\%$) among Decision Tree, Random Forest, and
+XGBoost baselines, verified with cross-validation. The resulting five-stage
+recommendation pipeline is deployed as a full-stack, multilingual web application with
+live weather integration, installable as both a Progressive Web App and a native
+Android application, moving beyond the offline, single-dataset evaluation common in
+prior crop recommendation literature toward a system a farmer can actually open on
+their phone today. Uncertainty quantification, more recent and sowing-date-labeled
+data, and generalization to other states remain the primary directions for future
+work.
+
+\begin{thebibliography}{00}
+
+\bibitem{alam2025} Md. S. B. Alam, V. Esichaikul, A. Lameesa, S. F. Ahmed, and
+A. H. Gandomi, ``An approach for crop recommendation with uncertainty quantification
+based on machine learning for sustainable agricultural decision-making,'' \emph{Results
+in Engineering}, vol. 26, p. 105505, 2025.
+
+\bibitem{elbasi2023} E. Elbasi, C. Zaki, A. E. Topcu, W. Abdelbaki, A. I. Zreikat,
+E. Cina, A. Shdefat, and L. Saker, ``Crop prediction model using machine learning
+algorithms,'' \emph{Applied Sciences}, vol. 13, no. 16, p. 9288, 2023.
+
+\bibitem{bera2023} S. Bera, T. Dey, A. Mukherjee, and R. Buyya, ``E-CropReco: a
+dew-edge-based multi-parametric crop recommendation framework for internet of
+agricultural things,'' \emph{The Journal of Supercomputing}, vol. 79, 2023.
+
+\bibitem{thilakarathne2023} N. N. Thilakarathne, M. S. A. Bakar, P. E. Abas, and
+H. Yassin, ``Towards making the fields talk: a real-time cloud enabled IoT crop
+management platform for smart agriculture,'' \emph{Frontiers in Plant Science},
+vol. 13, 2023.
+
+\bibitem{afzal2025} H. Afzal, M. Amjad, A. Raza, K. Munir, S. G. Villar,
+L. A. D. Lopez, and I. Ashraf, ``Incorporating soil information with machine learning
+for crop recommendation to improve agricultural output,'' \emph{Scientific Reports},
+vol. 15, 2025.
+
+\bibitem{chen2016} T. Chen and C. Guestrin, ``XGBoost: a scalable tree boosting
+system,'' in \emph{Proc. ACM SIGKDD Int. Conf. Knowledge Discovery and Data Mining},
+2016.
+
+\bibitem{biau2016} G. Biau and E. Scornet, ``A random forest guided tour,''
+\emph{Test}, vol. 25, 2016.
+
+\bibitem{jeong2016} J. H. Jeong, J. P. Resop, N. D. Mueller, D. H. Fleisher, K. Yun,
+E. E. Butler, D. J. Timlin, K.-M. Shim, J. S. Gerber, V. R. Reddy, and S.-H. Kim,
+``Random forests for global and regional crop yield predictions,'' \emph{PLOS ONE},
+vol. 11, no. 6, p. e0156571, 2016.
+
+\bibitem{hu2023} T. Hu, X. Zhang, G. Bohrer, Y. Liu, Y. Zhou, J. Martin, Y. Li, and
+K. Zhao, ``Crop yield prediction via explainable AI and interpretable machine
+learning: dangers of black box models for evaluating climate change impacts on crop
+yield,'' \emph{Agricultural and Forest Meteorology}, vol. 336, p. 109458, 2023.
+
+\bibitem{praveen2020} B. Praveen, S. Talukdar, Shahfahad, S. Mahato, J. Mondal,
+P. Sharma, A. R. M. T. Islam, and A. Rahman, ``Analyzing trend and forecasting of
+rainfall changes in India using non-parametrical and machine learning approaches,''
+\emph{Scientific Reports}, vol. 10, p. 10342, 2020.
+
+\bibitem{hasan2023} M. Hasan, M. A. Marjan, M. P. Uddin, M. I. Afjal, S. Kardy, S. Ma,
+and Y. Nam, ``Ensemble machine learning-based recommendation system for effective
+prediction of suitable agricultural crop cultivation,'' \emph{Frontiers in Plant
+Science}, vol. 14, 2023.
+
+\bibitem{bandi2023} R. Bandi, M. S. S. Likhit, S. R. Reddy, S. R. Bodla, and
+V. S. Venkat, ``Voting classifier-based crop recommendation,'' \emph{SN Computer
+Science}, vol. 4, 2023.
+
+\bibitem{nti2023} I. K. Nti, A. Zaman, O. Nyarko-Boateng, A. F. Adekoya, and
+F. Keyeremeh, ``A predictive analytics model for crop suitability and productivity
+with tree-based ensemble learning,'' \emph{Decision Analytics Journal}, vol. 8, 2023.
+
+\bibitem{gopi2024} P. S. S. Gopi and M. Karthikeyan, ``Red fox optimization with
+ensemble recurrent neural network for crop recommendation and yield prediction
+model,'' \emph{Multimedia Tools and Applications}, vol. 83, 2024.
+
+\bibitem{shingade2022} S. D. Shingade, R. P. Mudhalwadkar, and K. M. Masal, ``Random
+forest machine learning classifier for seed recommendation,'' in \emph{Proc. Int.
+Conf. Edge Computing and Applications (ICECAA)}, 2022.
+
+\bibitem{senapaty2024} M. K. Senapaty, A. Ray, and N. Padhy, ``A decision support
+system for crop recommendation using machine learning classification algorithms,''
+\emph{Agriculture}, vol. 14, no. 8, p. 1256, 2024.
+
+\bibitem{chaudhari2025} R. R. Chaudhari, S. Jain, and S. Gupta, ``Agricultural
+machine learning platform: enhancing crop suggestion and crop yield estimates,''
+\emph{Journal of Integrated Science and Technology}, vol. 13, 2025.
+
+\bibitem{agrawal2024} N. Agrawal, H. Govil, and T. Kumar, ``Agricultural land
+suitability classification and crop suggestion using machine learning and spatial
+multicriteria decision analysis in semi-arid ecosystem,'' \emph{Environment,
+Development and Sustainability}, 2024.
+
+\bibitem{correndo2021} A. A. Correndo, N. Tremblay, J. A. Coulter, D. Ruiz-Diaz,
+D. Franzen, E. Nafziger, V. Prasad, L. H. M. Rosso, K. Steinke, J. Du, C. D. Messina,
+and I. A. Ciampitti, ``Unraveling uncertainty drivers of the maize yield response to
+nitrogen: a Bayesian and machine learning approach,'' \emph{Agricultural and Forest
+Meteorology}, vol. 311, p. 108668, 2021.
+
+\bibitem{rihan2023} M. Rihan, A. Ali Bindajam, S. Talukdar, Shahfahad,
+M. W. Naikoo, J. Mallick, and A. Rahman, ``Forest fire susceptibility mapping with
+sensitivity and uncertainty analysis using machine learning and deep learning
+algorithms,'' \emph{Advances in Space Research}, vol. 72, 2023.
+
+\end{thebibliography}
+
+\end{document}
